@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"xray-checker/logger"
+	"19health/logger"
 )
 
 const (

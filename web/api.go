@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"strings"
 	"time"
-	"xray-checker/checker"
-	"xray-checker/config"
-	"xray-checker/models"
+	"19health/checker"
+	"19health/config"
+	"19health/models"
 )
 
 //go:embed openapi.yaml
@@ -319,7 +319,7 @@ const swaggerUIHTML = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Xray Checker API</title>
+  <title>19Health API</title>
   <style>
     body { margin: 0; padding: 0; }
     .swagger-ui .topbar { display: none; }

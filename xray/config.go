@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"xray-checker/logger"
-	"xray-checker/models"
+	"19health/logger"
+	"19health/models"
 )
 
 type ConfigGenerator struct{}

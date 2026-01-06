@@ -1,7 +1,7 @@
 package xray
 
 import (
-	"xray-checker/models"
+	"19health/models"
 )
 
 func PrepareProxyConfigs(proxies []*models.ProxyConfig) {

@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strings"
 	"time"
-	"xray-checker/checker"
-	"xray-checker/config"
-	"xray-checker/metrics"
-	"xray-checker/models"
+	"19health/checker"
+	"19health/config"
+	"19health/metrics"
+	"19health/models"
 )
 
 var registeredEndpoints []EndpointInfo

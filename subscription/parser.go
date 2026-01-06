@@ -12,8 +12,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"xray-checker/logger"
-	"xray-checker/models"
+	"19health/logger"
+	"19health/models"
 
 	libXray "github.com/xtls/libxray"
 )
@@ -367,7 +367,7 @@ func (p *Parser) fetchURLContent(source string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("User-Agent", "Xray-Checker")
+	req.Header.Set("User-Agent", "19Health")
 	req.Header.Set("Accept", "*/*")
 
 	client := &http.Client{Timeout: 30 * time.Second}

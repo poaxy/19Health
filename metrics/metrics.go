@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"time"
 
-	"xray-checker/logger"
+	"19health/logger"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"

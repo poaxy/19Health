@@ -6,8 +6,8 @@ ARG TARGETOS
 ARG TARGETARCH
 ARG GIT_TAG
 ARG GIT_COMMIT
-ARG USERNAME=kutovoys
-ARG REPOSITORY_NAME=xray-checker
+ARG USERNAME=remnawave
+ARG REPOSITORY_NAME=19health
 
 ENV CGO_ENABLED=0
 ENV GO111MODULE=on
@@ -24,13 +24,13 @@ RUN go mod download
 COPY . .
 
 RUN CGO_ENABLED=${CGO_ENABLED} GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
-  go build -ldflags="-s -w -X main.version=${GIT_TAG} -X main.commit=${GIT_COMMIT}" -a -installsuffix cgo -o /usr/bin/xray-checker . && \
-  upx --best --lzma /usr/bin/xray-checker
+  go build -ldflags="-s -w -X main.version=${GIT_TAG} -X main.commit=${GIT_COMMIT}" -a -installsuffix cgo -o /usr/bin/19health . && \
+  upx --best --lzma /usr/bin/19health
 
 FROM alpine:3.21
 
-ARG USERNAME=kutovoys
-ARG REPOSITORY_NAME=xray-checker
+ARG USERNAME=remnawave
+ARG REPOSITORY_NAME=19health
 
 LABEL org.opencontainers.image.source=https://github.com/${USERNAME}/${REPOSITORY_NAME}
 
@@ -40,8 +40,8 @@ RUN apk add --no-cache ca-certificates curl tzdata && \
     chown -R appuser:appuser /app
 
 WORKDIR /app
-COPY --from=builder /usr/bin/xray-checker /usr/bin/xray-checker
+COPY --from=builder /usr/bin/19health /usr/bin/19health
 
 USER appuser
 
-ENTRYPOINT ["/usr/bin/xray-checker"]
+ENTRYPOINT ["/usr/bin/19health"]

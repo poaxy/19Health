@@ -10,8 +10,8 @@ var CLIConfig CLI
 
 func Parse(version string) {
 	ctx := kong.Parse(&CLIConfig,
-		kong.Name("xray-checker"),
-		kong.Description("Xray Checker: A Prometheus exporter for monitoring Xray proxies"),
+		kong.Name("19health"),
+		kong.Description("19Health: A Prometheus exporter for monitoring Xray proxies"),
 		kong.Vars{
 			"version": version,
 		},
@@ -69,9 +69,9 @@ type VersionFlag string
 func (v VersionFlag) Decode(ctx *kong.DecodeContext) error { return nil }
 func (v VersionFlag) IsBool() bool                         { return true }
 func (v VersionFlag) BeforeApply(app *kong.Kong, vars kong.Vars) error {
-	fmt.Println("Xray Checker: A Prometheus exporter for monitoring Xray proxies")
+	fmt.Println("19Health: A Prometheus exporter for monitoring Xray proxies")
 	fmt.Printf("Version:\t %s\n", vars["version"])
-	fmt.Printf("GitHub: https://github.com/kutovoys/xray-checker\n")
+	fmt.Printf("GitHub: https://github.com/remnawave/19health\n")
 	app.Exit(0)
 	return nil
 }

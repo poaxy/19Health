@@ -1,6 +1,6 @@
 {
-  "name": "Xray Checker",
-  "short_name": "XC",
+  "name": "19Health",
+  "short_name": "19H",
   "icons": [
     {
       "src": "./static/web-app-manifest-192x192.png",

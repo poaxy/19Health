@@ -1,4 +1,4 @@
-module xray-checker
+module 19health
 
 go 1.25.5
 

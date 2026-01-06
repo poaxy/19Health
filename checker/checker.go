@@ -11,9 +11,9 @@ import (
 	"sync"
 	"time"
 
-	"xray-checker/logger"
-	"xray-checker/metrics"
-	"xray-checker/models"
+	"19health/logger"
+	"19health/metrics"
+	"19health/models"
 )
 
 type ProxyChecker struct {

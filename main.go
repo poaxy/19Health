@@ -3,14 +3,14 @@ package main
 import (
 	"net/http"
 	"time"
-	"xray-checker/checker"
-	"xray-checker/config"
-	"xray-checker/logger"
-	"xray-checker/metrics"
-	"xray-checker/models"
-	"xray-checker/subscription"
-	"xray-checker/web"
-	"xray-checker/xray"
+	"19health/checker"
+	"19health/config"
+	"19health/logger"
+	"19health/metrics"
+	"19health/models"
+	"19health/subscription"
+	"19health/web"
+	"19health/xray"
 
 	"github.com/go-co-op/gocron"
 	"github.com/prometheus/client_golang/prometheus"
@@ -28,7 +28,7 @@ func main() {
 	logLevel := logger.ParseLevel(config.CLIConfig.LogLevel)
 	logger.SetLevel(logLevel)
 
-	logger.Startup("Xray Checker %s", version)
+	logger.Startup("19Health %s", version)
 	if logLevel == logger.LevelNone {
 		logger.Startup("Log level: none (silent mode)")
 	}
