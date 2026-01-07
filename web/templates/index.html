@@ -10,11 +10,9 @@
     <link
       rel="icon"
       type="image/png"
-      href="./static/favicon-96x96.png"
-      sizes="96x96"
+      href="./static/favicon.png"
     />
-    <link rel="icon" type="image/svg+xml" href="./static/favicon.svg" />
-    <link rel="shortcut icon" href="./static/favicon.ico" />
+    <link rel="shortcut icon" href="./static/favicon.png" />
     <link
       rel="apple-touch-icon"
       sizes="180x180"
@@ -348,15 +346,8 @@
             class="w-9 h-9 rounded-lg card-flat flex items-center justify-center overflow-hidden"
           >
             <img
-              x-show="darkMode"
-              src="./static/logo-dark.svg"
-              alt="Logo"
-              class="w-7 h-7"
-            />
-            <img
-              x-show="!darkMode"
-              src="./static/logo-light.svg"
-              alt="Logo"
+              src="./static/19VPN.png"
+              alt="19VPN Logo"
               class="w-7 h-7"
             />
           </div>
@@ -371,10 +362,12 @@
         </div>
 
         <div class="flex items-center gap-2">
+          {{ if .Version }}
           <span
             class="h-9 px-3 text-xs rounded-lg card-flat text-muted flex items-center"
             >{{.Version}}</span
           >
+          {{ end }}
 
           <button
             @click="toggleAutoRefresh()"
@@ -786,27 +779,14 @@
       >
         <div>
           <a
-            href="https://github.com/remnawave/19health"
+            href="https://19vpn.com"
             target="_blank"
             class="hover:text-secondary"
-            >GitHub</a
-          >
-          <span class="mx-2">·</span>
-          <a
-            href="https://t.me/+Ux5gQhAY8KA2OTdi"
-            target="_blank"
-            class="hover:text-secondary"
-            >Telegram Chat</a
+            >website</a
           >
         </div>
         <div class="mt-2">
-          Made with ❤️ by
-          <a
-            href="https://github.com/remnawave"
-            target="_blank"
-            class="hover:text-secondary"
-            >remnawave</a
-          >
+          For those who have nothing to hide<br>But everything to protect.
         </div>
       </footer>
     </div>
