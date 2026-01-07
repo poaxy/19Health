@@ -32,6 +32,12 @@ func IndexHandler(version string, proxyChecker *checker.ProxyChecker) http.Handl
 
 		RegisterConfigEndpoints(proxyChecker.GetProxies(), proxyChecker, config.CLIConfig.Xray.StartPort)
 
+		// Get country flag for the local server
+		var countryFlag string
+		if ip, err := proxyChecker.GetCurrentIP(); err == nil {
+			countryFlag = GetCachedCountryFlag(ip)
+		}
+
 		data := PageData{
 			Version:                    version,
 			Host:                       config.CLIConfig.Metrics.Host,
@@ -50,6 +56,7 @@ func IndexHandler(version string, proxyChecker *checker.ProxyChecker) http.Handl
 			PushUrl:                    metrics.GetPushURL(config.CLIConfig.Metrics.PushURL),
 			Endpoints:                  registeredEndpoints,
 			ShowServerDetails:          config.CLIConfig.Web.ShowServerDetails,
+			CountryFlag:                countryFlag,
 		}
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")

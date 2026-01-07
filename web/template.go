@@ -48,6 +48,7 @@ type PageData struct {
 	PushUrl                    string
 	Endpoints                  []EndpointInfo
 	ShowServerDetails          bool
+	CountryFlag                string
 }
 
 func RenderIndex(w io.Writer, data PageData) error {
