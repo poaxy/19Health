@@ -220,7 +220,7 @@ func (p *Parser) Parse(subscriptionData string) ([]*models.ProxyConfig, error) {
 	}
 
 	if !response.Success {
-		return nil, fmt.Errorf("libXray parsing failed")
+		return nil, fmt.Errorf("libXray parsing failed. Please check your subscription hosts, check your HWID in your dashboard, or try disabling HWID lock for your checker account")
 	}
 
 	var xrayConfig struct {
