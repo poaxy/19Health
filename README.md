@@ -27,7 +27,7 @@ Full list of features available in the documentation.
 
 ## 🚀 Quick Start
 
-### Docker (use published image)
+### Docker
 
 ```bash
 docker run -d \
@@ -36,7 +36,7 @@ docker run -d \
   remnawave/19health
 ```
 
-### Docker Compose (use published image)
+### Docker Compose
 
 ```yaml
 services:
@@ -46,20 +46,6 @@ services:
       - SUBSCRIPTION_URL=https://your-subscription-url/sub
     ports:
       - "2112:2112"
-```
-
-### Docker Compose (build from source)
-
-This repository includes a `docker-compose.yml` that builds the image from the local source tree using the provided `Dockerfile`:
-
-```bash
-docker compose up --build
-```
-
-You can override configuration with environment variables, for example:
-
-```bash
-SUBSCRIPTION_URL=https://your-subscription-url/sub docker compose up --build
 ```
 
 Detailed installation and configuration documentation is available in the docs directory.
