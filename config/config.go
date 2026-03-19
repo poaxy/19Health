@@ -2,11 +2,17 @@ package config
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/alecthomas/kong"
 )
 
 var CLIConfig CLI
+
+const (
+	defaultMetricsUsername = "metricsUser"
+	defaultMetricsPassword = "MetricsVeryHardPassword"
+)
 
 func Parse(version string) {
 	ctx := kong.Parse(&CLIConfig,
@@ -17,6 +23,17 @@ func Parse(version string) {
 		},
 	)
 	_ = ctx
+
+	if CLIConfig.Metrics.Protected {
+		if CLIConfig.Metrics.Username == "" || CLIConfig.Metrics.Password == "" {
+			fmt.Fprintln(os.Stderr, "METRICS_PROTECTED requires METRICS_USERNAME and METRICS_PASSWORD to be set")
+			os.Exit(1)
+		}
+		if CLIConfig.Metrics.Username == defaultMetricsUsername || CLIConfig.Metrics.Password == defaultMetricsPassword {
+			fmt.Fprintln(os.Stderr, "METRICS_PROTECTED requires non-default credentials")
+			os.Exit(1)
+		}
+	}
 }
 
 type CLI struct {
@@ -28,6 +45,7 @@ type CLI struct {
 
 	Proxy struct {
 		CheckInterval   int    `name:"proxy-check-interval" help:"Interval for proxy checks in seconds" default:"300" env:"PROXY_CHECK_INTERVAL"`
+		CheckConcurrency int   `name:"proxy-check-concurrency" help:"Maximum concurrent proxy checks per iteration" default:"20" env:"PROXY_CHECK_CONCURRENCY"`
 		CheckMethod     string `name:"proxy-check-method" help:"Method for checking proxy, ip, status or download" default:"ip" env:"PROXY_CHECK_METHOD"`
 		IpCheckUrl      string `name:"proxy-ip-check-url" help:"Service URL for IP checking" default:"https://api.ipify.org?format=text" env:"PROXY_IP_CHECK_URL"`
 		StatusCheckUrl  string `name:"proxy-status-check-url" help:"Response status generator, used by check-method=status" default:"http://cp.cloudflare.com/generate_204" env:"PROXY_STATUS_CHECK_URL"`

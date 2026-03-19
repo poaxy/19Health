@@ -19,6 +19,7 @@ import (
 
 var (
 	version   = "unknown"
+	commit    = "unknown"
 	startTime = time.Now()
 )
 
@@ -28,7 +29,7 @@ func main() {
 	logLevel := logger.ParseLevel(config.CLIConfig.LogLevel)
 	logger.SetLevel(logLevel)
 
-	logger.Startup("19Health %s", version)
+	logger.Startup("19Health %s (%s)", version, commit)
 	if logLevel == logger.LevelNone {
 		logger.Startup("Log level: none (silent mode)")
 	}
@@ -81,6 +82,7 @@ func main() {
 		config.CLIConfig.Proxy.DownloadMinSize,
 		config.CLIConfig.Proxy.CheckMethod,
 		config.CLIConfig.Metrics.Instance,
+		config.CLIConfig.Proxy.CheckConcurrency,
 	)
 
 	runCheckIteration := func() {
@@ -198,6 +200,12 @@ func updateConfiguration(newConfigs []*models.ProxyConfig, currentConfigs *[]*mo
 	xray.PrepareProxyConfigs(newConfigs)
 
 	configFile := "xray_config.json"
+	backupConfigFile := "xray_config.backup.json"
+
+	if err := xray.CopyFile(configFile, backupConfigFile); err != nil {
+		logger.Warn("Failed to create config backup before update: %v", err)
+	}
+
 	configGenerator := xray.NewConfigGenerator()
 	if err := configGenerator.GenerateAndSaveConfig(
 		newConfigs,
@@ -213,7 +221,15 @@ func updateConfiguration(newConfigs []*models.ProxyConfig, currentConfigs *[]*mo
 	}
 
 	if err := xrayRunner.Start(); err != nil {
-		return err
+		logger.Error("Failed to start Xray with updated config, attempting rollback: %v", err)
+		if rollbackErr := xray.CopyFile(backupConfigFile, configFile); rollbackErr != nil {
+			return rollbackErr
+		}
+		if restartErr := xrayRunner.Start(); restartErr != nil {
+			return restartErr
+		}
+		logger.Warn("Configuration update failed, rolled back to previous config: %v", err)
+		return nil
 	}
 
 	proxyChecker.UpdateProxies(newConfigs)

@@ -1,6 +1,8 @@
 package web
 
 import (
+	"crypto/sha256"
+	"crypto/subtle"
 	"fmt"
 	"net/http"
 	"strings"
@@ -76,10 +78,17 @@ func HealthHandler() http.HandlerFunc {
 }
 
 func BasicAuthMiddleware(username, password string) func(http.Handler) http.Handler {
+	expectedUserHash := sha256.Sum256([]byte(username))
+	expectedPassHash := sha256.Sum256([]byte(password))
+
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			user, pass, ok := r.BasicAuth()
-			if !ok || user != username || pass != password {
+			userHash := sha256.Sum256([]byte(user))
+			passHash := sha256.Sum256([]byte(pass))
+			userMatch := subtle.ConstantTimeCompare(userHash[:], expectedUserHash[:]) == 1
+			passMatch := subtle.ConstantTimeCompare(passHash[:], expectedPassHash[:]) == 1
+			if !ok || !userMatch || !passMatch {
 				w.Header().Set("WWW-Authenticate", `Basic realm="metrics"`)
 				http.Error(w, "Unauthorized.", http.StatusUnauthorized)
 				return
@@ -103,7 +112,7 @@ func ConfigStatusHandler(proxyChecker *checker.ProxyChecker) http.HandlerFunc {
 			return
 		}
 
-		status, latency, err := proxyChecker.GetProxyStatus(found.Name)
+		status, latency, err := proxyChecker.GetProxyStatusByStableID(found.StableID)
 		if err != nil {
 			http.Error(w, "Status not available", http.StatusNotFound)
 			return
@@ -133,7 +142,11 @@ func RegisterConfigEndpoints(proxies []*models.ProxyConfig, proxyChecker *checke
 
 		endpoint := fmt.Sprintf("./config/%s", proxy.StableID)
 
-		status, latency, _ := proxyChecker.GetProxyStatus(proxy.Name)
+		status, latency, err := proxyChecker.GetProxyStatusByStableID(proxy.StableID)
+		if err != nil {
+			status = false
+			latency = 0
+		}
 
 		registeredEndpoints = append(registeredEndpoints, EndpointInfo{
 			Name:       proxy.Name,

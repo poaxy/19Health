@@ -18,6 +18,8 @@ import (
 
 type ProxyChecker struct {
 	proxies         []*models.ProxyConfig
+	proxyMu         sync.RWMutex
+	stateMu         sync.RWMutex
 	startPort       int
 	ipCheck         string
 	currentIP       string
@@ -32,9 +34,13 @@ type ProxyChecker struct {
 	downloadMinSize int64
 	checkMethod     string
 	instance        string
+	maxConcurrency  int
 }
 
-func NewProxyChecker(proxies []*models.ProxyConfig, startPort int, ipCheckURL string, ipCheckTimeout int, genMethodURL string, downloadURL string, downloadTimeout int, downloadMinSize int64, checkMethod string, instance string) *ProxyChecker {
+func NewProxyChecker(proxies []*models.ProxyConfig, startPort int, ipCheckURL string, ipCheckTimeout int, genMethodURL string, downloadURL string, downloadTimeout int, downloadMinSize int64, checkMethod string, instance string, maxConcurrency int) *ProxyChecker {
+	if maxConcurrency <= 0 {
+		maxConcurrency = 20
+	}
 	return &ProxyChecker{
 		proxies:   proxies,
 		startPort: startPort,
@@ -49,13 +55,18 @@ func NewProxyChecker(proxies []*models.ProxyConfig, startPort int, ipCheckURL st
 		downloadMinSize: downloadMinSize,
 		checkMethod:     checkMethod,
 		instance:        instance,
+		maxConcurrency:  maxConcurrency,
 	}
 }
 
 func (pc *ProxyChecker) GetCurrentIP() (string, error) {
+	pc.stateMu.RLock()
 	if pc.ipInitialized && pc.currentIP != "" {
-		return pc.currentIP, nil
+		currentIP := pc.currentIP
+		pc.stateMu.RUnlock()
+		return currentIP, nil
 	}
+	pc.stateMu.RUnlock()
 
 	resp, err := pc.httpClient.Get(pc.ipCheck)
 	if err != nil {
@@ -68,23 +79,16 @@ func (pc *ProxyChecker) GetCurrentIP() (string, error) {
 		return "", fmt.Errorf("error reading response: %v", err)
 	}
 
+	pc.stateMu.Lock()
 	pc.currentIP = string(body)
 	pc.ipInitialized = true
-	return pc.currentIP, nil
+	currentIP := pc.currentIP
+	pc.stateMu.Unlock()
+	return currentIP, nil
 }
 
 func (pc *ProxyChecker) CheckProxy(proxy *models.ProxyConfig) {
-	if proxy.StableID == "" {
-		proxy.StableID = proxy.GenerateStableID()
-	}
-
-	metricKey := fmt.Sprintf("%s|%s:%d|%s|%s",
-		proxy.Protocol,
-		proxy.Server,
-		proxy.Port,
-		proxy.Name,
-		proxy.StableID,
-	)
+	metricKey := buildMetricKey(proxy)
 
 	setFailedStatus := func() {
 		metrics.RecordProxyStatus(
@@ -203,8 +207,11 @@ func (pc *ProxyChecker) checkByIP(client *http.Client) (bool, string, time.Durat
 	}
 
 	proxyIP := string(body)
-	logMessage := fmt.Sprintf("Source IP: %s | Proxy IP: %s", pc.currentIP, proxyIP)
-	return proxyIP != pc.currentIP, logMessage, ttfb, nil
+	pc.stateMu.RLock()
+	currentIP := pc.currentIP
+	pc.stateMu.RUnlock()
+	logMessage := fmt.Sprintf("Source IP: %s | Proxy IP: %s", currentIP, proxyIP)
+	return proxyIP != currentIP, logMessage, ttfb, nil
 }
 
 func (pc *ProxyChecker) checkByGen(client *http.Client) (bool, string, time.Duration, error) {
@@ -312,8 +319,10 @@ func (pc *ProxyChecker) ClearMetrics() {
 }
 
 func (pc *ProxyChecker) UpdateProxies(newProxies []*models.ProxyConfig) {
+	pc.proxyMu.Lock()
+	pc.proxies = append([]*models.ProxyConfig(nil), newProxies...)
+	pc.proxyMu.Unlock()
 	pc.ClearMetrics()
-	pc.proxies = newProxies
 }
 
 func (pc *ProxyChecker) CheckAllProxies() {
@@ -322,11 +331,16 @@ func (pc *ProxyChecker) CheckAllProxies() {
 		return
 	}
 
+	proxies := pc.GetProxies()
+
 	var wg sync.WaitGroup
-	for _, proxy := range pc.proxies {
+	workers := make(chan struct{}, pc.maxConcurrency)
+	for _, proxy := range proxies {
 		wg.Add(1)
 		go func(p *models.ProxyConfig) {
 			defer wg.Done()
+			workers <- struct{}{}
+			defer func() { <-workers }()
 			pc.CheckProxy(p)
 		}(proxy)
 	}
@@ -334,20 +348,11 @@ func (pc *ProxyChecker) CheckAllProxies() {
 }
 
 func (pc *ProxyChecker) GetProxyStatus(name string) (bool, time.Duration, error) {
+	proxies := pc.GetProxies()
 	var metricKey string
-	for _, proxy := range pc.proxies {
+	for _, proxy := range proxies {
 		if proxy.Name == name {
-			if proxy.StableID == "" {
-				proxy.StableID = proxy.GenerateStableID()
-			}
-
-			metricKey = fmt.Sprintf("%s|%s:%d|%s|%s",
-				proxy.Protocol,
-				proxy.Server,
-				proxy.Port,
-				proxy.Name,
-				proxy.StableID,
-			)
+			metricKey = buildMetricKey(proxy)
 			break
 		}
 	}
@@ -369,13 +374,18 @@ func (pc *ProxyChecker) GetProxyStatus(name string) (bool, time.Duration, error)
 	return status.(bool), latency.(time.Duration), nil
 }
 
-func (pc *ProxyChecker) GetProxyByStableID(stableID string) (*models.ProxyConfig, bool) {
-	for _, proxy := range pc.proxies {
-		if proxy.StableID == "" {
-			proxy.StableID = proxy.GenerateStableID()
-		}
+func (pc *ProxyChecker) GetProxyStatusByStableID(stableID string) (bool, time.Duration, error) {
+	proxy, exists := pc.GetProxyByStableID(stableID)
+	if !exists {
+		return false, 0, fmt.Errorf("proxy not found")
+	}
+	return pc.GetProxyStatus(proxy.Name)
+}
 
-		if proxy.StableID == stableID {
+func (pc *ProxyChecker) GetProxyByStableID(stableID string) (*models.ProxyConfig, bool) {
+	proxies := pc.GetProxies()
+	for _, proxy := range proxies {
+		if getStableID(proxy) == stableID {
 			return proxy, true
 		}
 	}
@@ -383,5 +393,25 @@ func (pc *ProxyChecker) GetProxyByStableID(stableID string) (*models.ProxyConfig
 }
 
 func (pc *ProxyChecker) GetProxies() []*models.ProxyConfig {
-	return pc.proxies
+	pc.proxyMu.RLock()
+	defer pc.proxyMu.RUnlock()
+	return append([]*models.ProxyConfig(nil), pc.proxies...)
+}
+
+func buildMetricKey(proxy *models.ProxyConfig) string {
+	stableID := getStableID(proxy)
+	return fmt.Sprintf("%s|%s:%d|%s|%s",
+		proxy.Protocol,
+		proxy.Server,
+		proxy.Port,
+		proxy.Name,
+		stableID,
+	)
+}
+
+func getStableID(proxy *models.ProxyConfig) string {
+	if proxy.StableID != "" {
+		return proxy.StableID
+	}
+	return proxy.GenerateStableID()
 }
