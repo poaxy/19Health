@@ -7,9 +7,13 @@ ARG GIT_COMMIT=unknown
 ARG USERNAME=remnawave
 ARG REPOSITORY_NAME=19health
 ARG ENABLE_UPX=false
+ARG GOPROXY=https://proxy.golang.org,direct
+ARG GOSUMDB=sum.golang.org
 
 ENV CGO_ENABLED=0
 ENV GO111MODULE=on
+ENV GOPROXY=${GOPROXY}
+ENV GOSUMDB=${GOSUMDB}
 
 # Install UPX for binary compression
 RUN apk add --no-cache upx
@@ -18,7 +22,9 @@ WORKDIR /src
 
 COPY go.mod go.mod
 COPY go.sum go.sum
-RUN go mod download
+RUN set -eux; \
+  go mod download; \
+  go mod verify
 
 COPY . .
 

@@ -83,6 +83,29 @@ Enable UPX compression explicitly (optional):
 podman build --build-arg ENABLE_UPX=true -t remnawave/19health:local .
 ```
 
+### Podman Troubleshooting
+
+- Warnings like `can't raise ambient capability ... operation not permitted` are common in rootless/restricted environments and usually do not indicate a build failure by themselves.
+- If build appears to hang at `go mod download`, your host likely has limited access to Go module mirrors.
+
+Try:
+
+```bash
+podman build \
+  --build-arg GOPROXY=https://proxy.golang.org,direct \
+  --build-arg GOSUMDB=sum.golang.org \
+  -t remnawave/19health:local .
+```
+
+If your network blocks public Go mirrors, set an internal proxy:
+
+```bash
+podman build \
+  --build-arg GOPROXY=https://your-internal-go-proxy,direct \
+  --build-arg GOSUMDB=off \
+  -t remnawave/19health:local .
+```
+
 ## 🤝 Contributing
 
 We welcome any contributions to 19Health! If you want to help:
