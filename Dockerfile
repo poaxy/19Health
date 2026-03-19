@@ -1,13 +1,12 @@
-FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.25-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
-ARG TARGETPLATFORM
-ARG BUILDPLATFORM
 ARG TARGETOS
 ARG TARGETARCH
-ARG GIT_TAG
-ARG GIT_COMMIT
+ARG GIT_TAG=unknown
+ARG GIT_COMMIT=unknown
 ARG USERNAME=remnawave
 ARG REPOSITORY_NAME=19health
+ARG ENABLE_UPX=false
 
 ENV CGO_ENABLED=0
 ENV GO111MODULE=on
@@ -15,7 +14,7 @@ ENV GO111MODULE=on
 # Install UPX for binary compression
 RUN apk add --no-cache upx
 
-WORKDIR /go/src/github.com/${USERNAME}/${REPOSITORY_NAME}
+WORKDIR /src
 
 COPY go.mod go.mod
 COPY go.sum go.sum
@@ -23,9 +22,16 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=${CGO_ENABLED} GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
-  go build -ldflags="-s -w -X main.version=${GIT_TAG} -X main.commit=${GIT_COMMIT}" -a -installsuffix cgo -o /usr/bin/19health . && \
-  upx --best --lzma /usr/bin/19health
+RUN set -eux; \
+  goos="${TARGETOS:-$(go env GOOS)}"; \
+  goarch="${TARGETARCH:-$(go env GOARCH)}"; \
+  git_tag="${GIT_TAG:-unknown}"; \
+  git_commit="${GIT_COMMIT:-unknown}"; \
+  CGO_ENABLED="${CGO_ENABLED}" GOOS="${goos}" GOARCH="${goarch}" \
+  go build -ldflags="-s -w -X main.version=${git_tag} -X main.commit=${git_commit}" -a -installsuffix cgo -o /usr/bin/19health .; \
+  if [ "${ENABLE_UPX}" = "true" ]; then \
+    upx --best --lzma /usr/bin/19health; \
+  fi
 
 FROM alpine:3.21
 

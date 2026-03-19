@@ -36,6 +36,15 @@ docker run -d \
   remnawave/19health
 ```
 
+### Podman
+
+```bash
+podman run -d \
+  -e SUBSCRIPTION_URL=https://your-subscription-url/sub \
+  -p 2112:2112 \
+  docker.io/remnawave/19health
+```
+
 ### Docker Compose
 
 ```yaml
@@ -49,6 +58,30 @@ services:
 ```
 
 Detailed installation and configuration documentation is available in the docs directory.
+
+## Container Build Notes (Docker + Podman)
+
+- The project image is built from a single `Dockerfile` that works with both engines.
+- Build arguments `TARGETOS` and `TARGETARCH` are optional; if omitted, the build uses the builder image defaults.
+- Binary compression is optional and disabled by default for best compatibility.
+
+Build with Docker:
+
+```bash
+docker build -t remnawave/19health:local .
+```
+
+Build with Podman:
+
+```bash
+podman build -t remnawave/19health:local .
+```
+
+Enable UPX compression explicitly (optional):
+
+```bash
+podman build --build-arg ENABLE_UPX=true -t remnawave/19health:local .
+```
 
 ## 🤝 Contributing
 

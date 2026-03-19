@@ -1,0 +1,15 @@
+.git
+.github
+docs
+.cursor
+.vscode
+test-files
+configs
+geo
+*.md
+*.log
+*.tmp
+docker-compose.yml
+mistakes
+xray_config.json
+xray_config.backup.json
