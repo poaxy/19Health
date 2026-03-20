@@ -368,7 +368,7 @@
         </div>
 
         <div class="flex items-center gap-2">
-          {{ if .Version }}
+          {{ if and .Version (ne .Version "unknown") }}
           <span
             class="h-9 px-3 text-xs rounded-lg card-flat text-muted flex items-center"
             >{{.Version}}</span
@@ -501,7 +501,7 @@
           </div>
           {{ end }}
           <a
-            href="./metrics"
+            href="./metrics/ui"
             target="_blank"
             class="btn px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5"
           >
@@ -521,7 +521,7 @@
             Metrics
           </a>
           <a
-            href="./health"
+            href="./health/ui"
             target="_blank"
             class="btn px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5"
           >
@@ -704,7 +704,7 @@
 
       <!-- Proxy Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 mb-4">
-        <template x-for="(proxy, idx) in filteredProxies" :key="proxy.name">
+          <template x-for="(proxy, idx) in filteredProxies" :key="proxy.stableId">
           <div
             class="proxy-card group card rounded-lg px-3 py-2.5 flex items-center gap-3 transition-all duration-150"
             :class="initialLoad && 'animate'"
@@ -829,7 +829,7 @@
 
           proxies: [
             {{ range $.Endpoints }}
-            { name: "{{.Name}}", {{ if $.ShowServerDetails }}serverInfo: "{{.ServerInfo}}", proxyPort: {{.ProxyPort}}, {{ end }}url: "{{.URL}}", index: {{.Index}}, status: {{.Status}}, latency: "{{ formatLatency .Latency }}", latencyMs: {{ .Latency.Milliseconds }} },
+            { stableId: "{{.StableID}}", name: "{{.Name}}", {{ if $.ShowServerDetails }}serverInfo: "{{.ServerInfo}}", proxyPort: {{.ProxyPort}}, {{ end }}url: "{{.URL}}", index: {{.Index}}, status: {{.Status}}, latency: "{{ formatLatency .Latency }}", latencyMs: {{ .Latency.Milliseconds }} },
             {{ end }}
           ],
 
@@ -909,7 +909,7 @@
               const json = await res.json();
               if (json.success && json.data) {
                 json.data.forEach(updated => {
-                  const proxy = this.proxies.find(p => p.name === updated.name);
+              const proxy = this.proxies.find(p => p.stableId === updated.stableId);
                   if (proxy) {
                     proxy.status = updated.online;
                     proxy.latencyMs = updated.latencyMs;

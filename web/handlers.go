@@ -17,6 +17,7 @@ var registeredEndpoints []EndpointInfo
 
 type EndpointInfo struct {
 	Name       string
+	StableID   string
 	ServerInfo string
 	URL        string
 	ProxyPort  int
@@ -150,6 +151,7 @@ func RegisterConfigEndpoints(proxies []*models.ProxyConfig, proxyChecker *checke
 
 		registeredEndpoints = append(registeredEndpoints, EndpointInfo{
 			Name:       proxy.Name,
+			StableID:  proxy.StableID,
 			ServerInfo: fmt.Sprintf("%s:%d", proxy.Server, proxy.Port),
 			URL:        endpoint,
 			ProxyPort:  startPort + proxy.Index,

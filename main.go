@@ -157,6 +157,8 @@ func main() {
 	protectedHandler := http.NewServeMux()
 	protectedHandler.Handle("/", web.IndexHandler(version, proxyChecker))
 	protectedHandler.Handle("/metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
+	protectedHandler.Handle("/metrics/ui", web.MetricsUIHandler(registry))
+	protectedHandler.Handle("/health/ui", web.HealthUIHandler(proxyChecker))
 
 	web.RegisterConfigEndpoints(*proxyConfigs, proxyChecker, config.CLIConfig.Xray.StartPort)
 	protectedHandler.Handle("/config/", web.ConfigStatusHandler(proxyChecker))
