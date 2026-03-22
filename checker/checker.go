@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptrace"
 	"net/url"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
@@ -339,6 +340,15 @@ func (pc *ProxyChecker) CheckAllProxies() {
 		wg.Add(1)
 		go func(p *models.ProxyConfig) {
 			defer wg.Done()
+			defer func() {
+				if r := recover(); r != nil {
+					name := ""
+					if p != nil {
+						name = p.Name
+					}
+					logger.Error("panic in CheckProxy for %q: %v\n%s", name, r, debug.Stack())
+				}
+			}()
 			workers <- struct{}{}
 			defer func() { <-workers }()
 			pc.CheckProxy(p)

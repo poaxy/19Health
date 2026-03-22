@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"runtime/debug"
 	"time"
 	"19health/checker"
 	"19health/config"
@@ -112,6 +113,11 @@ func main() {
 
 	checkScheduler := gocron.NewScheduler(time.UTC)
 	checkScheduler.Every(config.CLIConfig.Proxy.CheckInterval).Seconds().Do(func() {
+		defer func() {
+			if r := recover(); r != nil {
+				logger.Error("panic in proxy check scheduler: %v\n%s", r, debug.Stack())
+			}
+		}()
 		runCheckIteration()
 	})
 	checkScheduler.StartAsync()
@@ -119,6 +125,11 @@ func main() {
 	if config.CLIConfig.Subscription.Update {
 		updateScheduler := gocron.NewScheduler(time.UTC)
 		updateScheduler.Every(config.CLIConfig.Subscription.UpdateInterval).Seconds().Do(func() {
+			defer func() {
+				if r := recover(); r != nil {
+					logger.Error("panic in subscription update scheduler: %v\n%s", r, debug.Stack())
+				}
+			}()
 			logger.Info("Checking subscriptions for updates...")
 			newConfigs, err := subscription.ReadFromMultipleSources(config.CLIConfig.Subscription.URLs)
 			if err != nil {
