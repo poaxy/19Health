@@ -5,7 +5,10 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
+	"runtime/debug"
 	"strings"
+	"time"
 )
 
 type Level int
@@ -97,6 +100,12 @@ func Fatal(format string, v ...interface{}) {
 	log.Fatalf("[FATAL] "+format, v...)
 }
 
+func LogPanic(context string, recovered interface{}) {
+	message := fmt.Sprintf("panic in %s: %v\n%s", context, recovered, debug.Stack())
+	errorLogger.Printf("[ERROR] %s", message)
+	appendPanicBreadcrumb(message)
+}
+
 func Startup(format string, v ...interface{}) {
 	fmt.Printf(format+"\n", v...)
 }
@@ -105,4 +114,23 @@ func Result(format string, v ...interface{}) {
 	if level >= LevelInfo {
 		stdLogger.Printf(format, v...)
 	}
+}
+
+func appendPanicBreadcrumb(message string) {
+	path := os.Getenv("PANIC_LOG_PATH")
+	if path == "" {
+		path = "/tmp/19health-panics.log"
+	}
+
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return
+	}
+
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
+	_, _ = file.WriteString(fmt.Sprintf("[%s] %s\n", time.Now().UTC().Format(time.RFC3339), message))
 }

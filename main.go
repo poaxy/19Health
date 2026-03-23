@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"runtime/debug"
 	"time"
 	"19health/checker"
 	"19health/config"
@@ -25,6 +24,12 @@ var (
 )
 
 func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			logger.LogPanic("main", r)
+		}
+	}()
+
 	config.Parse(version)
 
 	logLevel := logger.ParseLevel(config.CLIConfig.LogLevel)
@@ -115,7 +120,7 @@ func main() {
 	checkScheduler.Every(config.CLIConfig.Proxy.CheckInterval).Seconds().Do(func() {
 		defer func() {
 			if r := recover(); r != nil {
-				logger.Error("panic in proxy check scheduler: %v\n%s", r, debug.Stack())
+				logger.LogPanic("proxy check scheduler", r)
 			}
 		}()
 		runCheckIteration()
@@ -127,7 +132,7 @@ func main() {
 		updateScheduler.Every(config.CLIConfig.Subscription.UpdateInterval).Seconds().Do(func() {
 			defer func() {
 				if r := recover(); r != nil {
-					logger.Error("panic in subscription update scheduler: %v\n%s", r, debug.Stack())
+					logger.LogPanic("subscription update scheduler", r)
 				}
 			}()
 			logger.Info("Checking subscriptions for updates...")

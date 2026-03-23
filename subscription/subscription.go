@@ -64,6 +64,15 @@ func ReadFromMultipleSources(urls []string) ([]*models.ProxyConfig, error) {
 		wg.Add(1)
 		go func(u string) {
 			defer wg.Done()
+			defer func() {
+				if r := recover(); r != nil {
+					logger.LogPanic(fmt.Sprintf("subscription fetch worker %s", u), r)
+					results <- subscriptionResult{
+						URL:   u,
+						Error: fmt.Errorf("panic while parsing subscription"),
+					}
+				}
+			}()
 			configs, err := ReadFromSource(u)
 			results <- subscriptionResult{
 				URL:     u,
