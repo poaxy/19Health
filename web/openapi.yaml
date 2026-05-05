@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Xray Checker API
+  title: 19Health API
   description: API for monitoring Xray proxy status and configuration
   version: "1.0"
 servers:

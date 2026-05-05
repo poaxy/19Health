@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"xray-checker/logger"
+	"19health/logger"
 
 	"github.com/xtls/xray-core/common/log"
 	"github.com/xtls/xray-core/core"

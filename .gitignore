@@ -23,9 +23,8 @@ go.work.sum
 
 # env file
 .env
-xray-checker
+19health
 xray_config.json
-docker-compose.yml
 .DS_Store
 test-files/
 configs/
