@@ -22,7 +22,7 @@ Rebrand the upstream `kutovoys/xray-checker` fork to **19Health**, rewrite the R
 | Display name | `19Health` |
 | Go module path | `19health` |
 | Binary name | `19health` |
-| CLI env var prefix | `19HEALTH_*` (replaces `XRAY_CHECKER_*`) |
+| Env vars | **Unchanged** — the project uses flat env names (`SUBSCRIPTION_URL`, `PROXY_CHECK_INTERVAL`, etc.) with no `XRAY_CHECKER_*` prefix to rename. Existing user setups keep working. |
 | Docker image | `ghcr.io/poaxy/19health` |
 | Container name (compose default) | `19health` |
 | Runtime Xray config file | `xray_config.json` (unchanged) |
@@ -38,8 +38,8 @@ Rebrand the upstream `kutovoys/xray-checker` fork to **19Health**, rewrite the R
 | `go.mod` | `module xray-checker` → `module 19health` |
 | All `*.go` files | Update imports: `xray-checker/<pkg>` → `19health/<pkg>` |
 | `main.go` | `logger.Startup("Xray Checker %s", version)` → `19Health` |
-| `config/config.go` | Update kong env-var prefix from `XRAY_CHECKER_` to `19HEALTH_`; update CLI help text and any version-print string referencing "Xray Checker" |
-| Other Go source | Replace any user-facing strings or comments mentioning "Xray Checker" / "xray-checker" branding; leave references to "xray" the protocol/binary alone |
+| `config/config.go` | `kong.Name("xray-checker")` → `kong.Name("19health")`; rebrand `kong.Description(...)`; rebrand `VersionFlag.BeforeApply` print strings (the "Xray Checker:" prefix and the GitHub URL pointing at `kutovoys/xray-checker`). **Do not change env-var names** — they have no prefix and changing them would break existing user setups. |
+| Other Go source | Replace user-facing strings: `subscription/parser.go:469` `User-Agent: Xray-Checker` and line 473 `X-Device-Model: Xray-Checker Pro Max` → `19Health` variants. **Risk:** some subscription providers whitelist specific User-Agents; if subs break after the change, revert these two lines. Leave references to "xray" the protocol/binary alone. |
 
 Implementation order: edit `go.mod` first, then a single `find` + `sed` pass to rewrite all imports, then `go build` to verify. Manual edits for the user-visible strings caught by `grep -ri 'xray.checker\|xray checker' --include='*.go'`.
 
@@ -47,8 +47,9 @@ Implementation order: edit `go.mod` first, then a single `find` + `sed` pass to 
 
 | File | Change |
 |---|---|
-| `web/templates/index.html` | `<title>`, header brand text, `Powered by Xray Checker` footer → `19Health` |
-| `web/openapi.yaml` | API title, description, contact info |
+| `web/templates/index.html` | Line 11 (`<title>`), line 27 (`apple-mobile-web-app-title`), line 526 (h1 brand), lines ~711-734 (drop the upstream Docs button entirely — it links to `xray-checker.kutovoy.dev`), lines 967-1006 (footer): "Powered by Xray Checker" link → "Powered by 19Health" pointing at `github.com/poaxy/19Health`; the non-public footer's GitHub link → `poaxy/19Health`; the Telegram link → drop; "Made with ❤️ by kutovoys" → drop. |
+| `web/openapi.yaml` | API title `Xray Checker API` → `19Health API`; description; contact info if branded |
+| `web/api.go` | Line 339: `<title>Xray Checker API</title>` (Swagger UI HTML) → `19Health API` |
 | `web/static/site.webmanifest` | `name`, `short_name`, theme colors if branded |
 | `web/static/favicon.ico` | Regenerated from icon source (16/32/48 multi-size) |
 | `web/static/favicon.svg` | Replaced with SVG wrapper embedding the new PNG |
