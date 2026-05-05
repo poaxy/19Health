@@ -1,113 +1,150 @@
-# Xray Checker
+# 19Health
 
-<div align="center">
+19Health is a Prometheus-friendly proxy availability monitor for VLESS, VMess, Trojan, and Shadowsocks proxies. It connects to your proxies through Xray Core, runs periodic health checks, and exposes the results as Prometheus metrics, a web dashboard, and a REST API.
 
-[![GitHub Release](https://img.shields.io/github/v/release/kutovoys/xray-checker?color=blue)](https://github.com/kutovoys/xray-checker/releases/latest)
-[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/kutovoys/xray-checker/build-publish.yml)](https://github.com/kutovoys/xray-checker/actions/workflows/build-publish.yml)
-[![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/kutovoys/xray-checker/total?logo=github&color=blue)](https://github.com/kutovoys/xray-checker/releases/latest)
-[![Docker Pulls](https://img.shields.io/docker/pulls/kutovoys/xray-checker?logo=docker&label=pulls)](https://hub.docker.com/r/kutovoys/xray-checker/)
-[![GitHub License](https://img.shields.io/github/license/kutovoys/xray-checker?color=greeen)](https://github.com/kutovoys/xray-checker/blob/main/LICENSE)
-[![ru](https://img.shields.io/badge/lang-ru-blue)](https://github.com/kutovoys/xray-checker/blob/main/README_RU.md)
-[![en](https://img.shields.io/badge/lang-en-red)](https://github.com/kutovoys/xray-checker/blob/main/README.md)
+This project is a fork of [kutovoys/xray-checker](https://github.com/kutovoys/xray-checker), rebranded and maintained as 19Health.
 
-</div>
-<div align="center">
+## Features
 
-[![Documentation](https://img.shields.io/badge/Docs-xray--checker.kutovoy.dev-blue)](https://xray-checker.kutovoy.dev/)
-[![DockerHub](https://img.shields.io/badge/DockerHub-kutovoys%2Fxray--checker-blue)](https://hub.docker.com/r/kutovoys/xray-checker/)
-[![Live Demo](https://img.shields.io/badge/Demo-live-green)](https://demo-xray-checker.kutovoy.dev/)
-[![Telegram Chat](https://img.shields.io/badge/Telegram-Chat-blue?logo=telegram&)](https://t.me/+uZCGx_FRY0tiOGIy)
+- Monitor VLESS, VMess, Trojan, and Shadowsocks proxies through Xray Core
+- Automatic configuration updates from one or more subscriptions
+- Three check methods: IP-change verification, HTTP-status, or download throughput
+- Prometheus `/metrics` endpoint, with optional Pushgateway support
+- REST API with OpenAPI/Swagger docs
+- Web dashboard (dark/light themes), with optional public status-page mode
+- Endpoints for integration with Uptime Kuma and other monitoring systems
+- Automatic geoip/geosite file management
+- Optional basic-auth protection
+- Multi-arch container images (`linux/amd64`, `linux/arm64`)
 
-</div>
-
-Xray Checker is a tool for monitoring proxy server availability with support for VLESS, VMess, Trojan, and Shadowsocks protocols. It automatically tests connections through Xray Core and provides metrics for Prometheus, as well as API endpoints for integration with monitoring systems.
-
-<div align="center">
-  <img src=".github/screen/xray-checker.webp" alt="Dashboard Screenshot">
-</div>
-
-> [!TIP]
-> **Try the Live Demo:** See Xray Checker in action at [demo-xray-checker.kutovoy.dev](https://demo-xray-checker.kutovoy.dev/)
-
-## 🚀 Key Features
-
-- 🔍 Monitoring of Xray proxy servers (VLESS, VMess, Trojan, Shadowsocks)
-- 🔄 Automatic configuration updates from subscription (multiple subscriptions supported)
-- 📊 Prometheus metrics export with Pushgateway support
-- 🌐 REST API with OpenAPI/Swagger documentation
-- 🌓 Web interface with dark/light theme
-- 🎨 Full web customization (custom logo, styles, or entire template)
-- 📄 Public status page for VPN services (no authentication required)
-- 📥 Endpoints for monitoring system integration (Uptime Kuma, etc.)
-- 🔒 Basic Auth protection for metrics and web interface
-- 🐳 Docker and Docker Compose support
-- 🌍 Automatic geo files management (geoip.dat, geosite.dat)
-- 📝 Flexible configuration loading:
-  - URL subscriptions (base64, JSON)
-  - Share links (vless://, vmess://, trojan://, ss://)
-  - JSON configuration files
-  - Folders with configurations
-
-Full list of features available in the [documentation](https://xray-checker.kutovoy.dev/intro/features).
-
-## 🚀 Quick Start
-
-### Docker
+## Quick start (Docker)
 
 ```bash
 docker run -d \
-  -e SUBSCRIPTION_URL=https://your-subscription-url/sub \
+  --name 19health \
+  --restart unless-stopped \
+  -e SUBSCRIPTION_URL='https://your-subscription-url/sub' \
   -p 2112:2112 \
-  kutovoys/xray-checker
+  ghcr.io/poaxy/19health:latest
 ```
 
-### Docker Compose
+Then open <http://localhost:2112> for the dashboard, <http://localhost:2112/metrics> for Prometheus metrics, and <http://localhost:2112/api/v1/docs> for the API docs.
 
-```yaml
-services:
-  xray-checker:
-    image: kutovoys/xray-checker
-    environment:
-      - SUBSCRIPTION_URL=https://your-subscription-url/sub
-    ports:
-      - "2112:2112"
+## Docker Compose (recommended)
+
+A ready-to-use `docker-compose.yml` is included in this repository.
+
+1. Clone (or download) the repo:
+
+   ```bash
+   git clone https://github.com/poaxy/19Health.git
+   cd 19Health
+   ```
+
+2. Copy the example env file and fill in your subscription URL:
+
+   ```bash
+   cp .env.example .env
+   $EDITOR .env   # set SUBSCRIPTION_URL=...
+   ```
+
+3. Pre-create the geo volume directory with the right ownership (the container runs as UID 1000, so a fresh host directory created by Docker as root will not be writable):
+
+   ```bash
+   mkdir -p ./geo
+   sudo chown 1000:1000 ./geo
+   ```
+
+   Alternatively, edit `docker-compose.yml` to use a Docker named volume instead of the bind mount:
+
+   ```yaml
+       volumes:
+         - geo:/app/geo
+   volumes:
+     geo:
+   ```
+
+4. Start it:
+
+   ```bash
+   docker compose up -d
+   ```
+
+5. Check it:
+
+   ```bash
+   docker compose logs -f
+   curl -s http://localhost:2112/health   # should print {"status":"ok"}
+   ```
+
+6. Stop / update:
+
+   ```bash
+   docker compose down            # stop
+   docker compose pull            # pull new image
+   docker compose up -d           # restart on new image
+   ```
+
+## Installation alternatives
+
+### Prebuilt binary
+
+Download a release tarball from <https://github.com/poaxy/19Health/releases>, extract it, and run:
+
+```bash
+SUBSCRIPTION_URL='https://your-subscription-url/sub' ./19health
 ```
 
-Detailed installation and configuration documentation is available at [xray-checker.kutovoy.dev](https://xray-checker.kutovoy.dev/intro/quick-start)
+### From source
 
-## 📈 Project Statistics
+Requires Go 1.25+:
 
-<a href="https://star-history.com/#kutovoys/xray-checker&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=kutovoys/xray-checker&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=kutovoys/xray-checker&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=kutovoys/xray-checker&type=Date" />
- </picture>
-</a>
+```bash
+git clone https://github.com/poaxy/19Health.git
+cd 19Health
+go build -o 19health .
+SUBSCRIPTION_URL='https://your-subscription-url/sub' ./19health
+```
 
-## 🤝 Contributing
+## Configuration
 
-We welcome any contributions to Xray Checker! If you want to help:
+Common environment variables (full list in [`.env.example`](.env.example)):
 
-1. Fork the repository
-2. Create a branch for your changes
-3. Make and test your changes
-4. Create a Pull Request
+| Variable | Default | Purpose |
+|---|---|---|
+| `SUBSCRIPTION_URL` | *(required)* | Subscription URL (or comma-separated list of URLs) |
+| `PROXY_CHECK_INTERVAL` | `300` | Seconds between proxy checks |
+| `PROXY_CHECK_METHOD` | `ip` | `ip`, `status`, or `download` |
+| `METRICS_PORT` | `2112` | Listen port |
+| `METRICS_PROTECTED` | `false` | Require basic auth on `/metrics` and `/api` |
+| `METRICS_USERNAME` | `metricsUser` | Basic-auth user (when protected) |
+| `METRICS_PASSWORD` | `MetricsVeryHardPassword` | Basic-auth password (when protected — change this!) |
+| `WEB_PUBLIC` | `false` | Public status page (requires `METRICS_PROTECTED=true`) |
+| `LOG_LEVEL` | `info` | `debug`, `info`, `warn`, `error`, or `none` |
 
-For more details on how to contribute, read the [contributor's guide](https://xray-checker.kutovoy.dev/contributing/development-guide).
+CLI flags are also accepted; run `19health --help` for the full list.
 
-<p align="center">
-Thanks to the all contributors who have helped improve Xray Checker:
-</p>
-<p align="center">
-<a href="https://github.com/kutovoys/xray-checker/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=kutovoys/xray-checker" />
-</a>
-</p>
-<p align="center">
-  Made with <a rel="noopener noreferrer" target="_blank" href="https://contrib.rocks">contrib.rocks</a>
-</p>
+## Endpoints
 
-## VPN Recommendation
+| Path | Purpose |
+|---|---|
+| `/` | Web dashboard |
+| `/health` | Liveness probe — returns 200 when the server is up |
+| `/metrics` | Prometheus metrics (basic-auth-gated when `METRICS_PROTECTED=true`) |
+| `/api/v1/proxies` | List of proxies with status |
+| `/api/v1/public/proxies` | Public-safe proxy list (no IPs/ports) |
+| `/api/v1/docs` | Swagger UI |
+| `/api/v1/openapi.yaml` | OpenAPI spec |
+| `/config/<id>` | Per-proxy detail page |
 
-For secure and reliable internet access, we recommend [BlancVPN](https://getblancvpn.com/pricing?promo=klugscl&ref=xc-readme). Use promo code `KLUGSCL` for 15% off your subscription.
+## Container image visibility
+
+The first time the publish workflow runs on a fresh `poaxy/19Health` repo, the resulting `ghcr.io/poaxy/19health` package will be **private**. To make it public (so users can `docker pull` without authenticating), visit:
+
+<https://github.com/users/poaxy/packages/container/19health/settings>
+
+and switch "Package visibility" to **Public**. This is a one-time step.
+
+## License & attribution
+
+Distributed under the terms of the upstream project's [LICENSE](LICENSE) file. 19Health is a fork of [kutovoys/xray-checker](https://github.com/kutovoys/xray-checker); thanks to the original author and contributors.
