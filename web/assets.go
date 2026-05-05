@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-	"xray-checker/logger"
+	"19health/logger"
 )
 
 type AssetLoader struct {

@@ -5,10 +5,10 @@ import (
 	"net"
 	"sort"
 	"sync"
-	"xray-checker/config"
-	"xray-checker/logger"
-	"xray-checker/models"
-	"xray-checker/xray"
+	"19health/config"
+	"19health/logger"
+	"19health/models"
+	"19health/xray"
 )
 
 var (

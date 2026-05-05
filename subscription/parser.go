@@ -12,9 +12,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"xray-checker/config"
-	"xray-checker/logger"
-	"xray-checker/models"
+	"19health/config"
+	"19health/logger"
+	"19health/models"
 
 	libXray "github.com/xtls/libxray"
 )

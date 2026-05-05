@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"strings"
 	"time"
-	"xray-checker/checker"
-	"xray-checker/config"
-	"xray-checker/models"
+	"19health/checker"
+	"19health/config"
+	"19health/models"
 )
 
 //go:embed openapi.yaml

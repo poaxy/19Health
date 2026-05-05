@@ -6,11 +6,11 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"xray-checker/checker"
-	"xray-checker/config"
-	"xray-checker/metrics"
-	"xray-checker/models"
-	"xray-checker/subscription"
+	"19health/checker"
+	"19health/config"
+	"19health/metrics"
+	"19health/models"
+	"19health/subscription"
 )
 
 var (
