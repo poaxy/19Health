@@ -126,6 +126,8 @@ CLI flags are also accepted; run `19health --help` for the full list.
 
 ## Endpoints
 
+The most-used endpoints are summarized below. Open <http://localhost:2112/api/v1/docs> after the server starts for the complete OpenAPI/Swagger reference.
+
 | Path | Purpose |
 |---|---|
 | `/` | Web dashboard |
