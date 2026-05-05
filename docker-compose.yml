@@ -1,0 +1,11 @@
+services:
+  19health:
+    image: ghcr.io/poaxy/19health:latest
+    container_name: 19health
+    restart: unless-stopped
+    ports:
+      - "2112:2112"
+    env_file:
+      - .env
+    volumes:
+      - ./geo:/app/geo
