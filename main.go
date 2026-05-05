@@ -29,7 +29,7 @@ func main() {
 	logLevel := logger.ParseLevel(config.CLIConfig.LogLevel)
 	logger.SetLevel(logLevel)
 
-	logger.Startup("Xray Checker %s", version)
+	logger.Startup("19Health %s", version)
 	if logLevel == logger.LevelNone {
 		logger.Startup("Log level: none (silent mode)")
 	}
