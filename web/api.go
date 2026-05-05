@@ -336,7 +336,7 @@ const swaggerUIHTML = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Xray Checker API</title>
+  <title>19Health API</title>
   <style>
     body { margin: 0; padding: 0; }
     .swagger-ui .topbar { display: none; }
