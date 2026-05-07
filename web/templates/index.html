@@ -1036,17 +1036,6 @@
             {{ end }}
           ],
 
-          get stats() {
-            const online = this.proxies.filter(p => p.status).length;
-            const withLatency = this.proxies.filter(p => p.status && p.latencyMs > 0);
-            return {
-              total: this.proxies.length,
-              online,
-              offline: this.proxies.length - online,
-              avgLatency: withLatency.length ? Math.round(withLatency.reduce((s, p) => s + p.latencyMs, 0) / withLatency.length) : 0
-            };
-          },
-
           get filteredProxies() {
             let r = this.proxies;
             if (this.search) {
