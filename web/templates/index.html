@@ -769,7 +769,7 @@
               ></span>
               <span
                 class="text-sm font-bold tabular-nums"
-                :class="proxy.online ? 'text-accent' : 'text-offline'"
+                :class="latencyClass(proxy)"
                 x-text="proxy.online ? proxy.latency : 'offline'"
               ></span>
             </div>
@@ -1115,6 +1115,13 @@
             if (proxy.latencyMs < 500) return 'var(--color-green)';
             if (proxy.latencyMs < 1000) return 'var(--color-yellow)';
             return 'var(--color-red)';
+          },
+
+          latencyClass(proxy) {
+            if (!proxy.online || proxy.latencyMs === 0) return 'latency-bad';
+            if (proxy.latencyMs < 500) return 'latency-good';
+            if (proxy.latencyMs < 1000) return 'latency-medium';
+            return 'latency-bad';
           },
 
           // Build (x, y) coordinates for non-zero sparkline samples,

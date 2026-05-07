@@ -115,11 +115,9 @@ func (s *Store) Snapshot(stableID string, now time.Time) Snapshot {
 
 	windowStart := now.Add(-s.cfg.Window)
 	bucketDur := s.cfg.Window / time.Duration(s.cfg.BucketCount)
-	sparkDur := s.cfg.Window / time.Duration(s.cfg.SparklinePoints)
 
-	// Filter and group samples for both heartbeat and sparkline buckets.
+	// Filter and group samples by heartbeat bucket.
 	hbGroups := make([][]Sample, s.cfg.BucketCount)
-	sparkGroups := make([][]Sample, s.cfg.SparklinePoints)
 
 	var inWindow []Sample
 	for _, sm := range samples {
@@ -132,30 +130,32 @@ func (s *Store) Snapshot(stableID string, now time.Time) Snapshot {
 		if hbIdx >= 0 && hbIdx < s.cfg.BucketCount {
 			hbGroups[hbIdx] = append(hbGroups[hbIdx], sm)
 		}
-		spIdx := int(sm.Timestamp.Sub(windowStart) / sparkDur)
-		if spIdx >= 0 && spIdx < s.cfg.SparklinePoints {
-			sparkGroups[spIdx] = append(sparkGroups[spIdx], sm)
-		}
 	}
 
 	for i, group := range hbGroups {
 		snap.Heartbeats[i] = reduceBucket(group, s.cfg.DegradedLatency)
 	}
-	for i, group := range sparkGroups {
-		// Sparkline records median latency of online samples; 0 if no online samples.
-		var online []Sample
-		for _, sm := range group {
-			if sm.Online && sm.LatencyMs > 0 {
-				online = append(online, sm)
-			}
-		}
-		if len(online) > 0 {
-			snap.Sparkline[i] = medianLatency(online)
-		}
-	}
 
 	if len(inWindow) == 0 {
 		return snap
+	}
+
+	// Sparkline = the most recent SparklinePoints samples, oldest first.
+	// If fewer samples exist, the leading slots stay zero (right-aligned).
+	// Each slot stores the sample's latency; offline samples render as 0.
+	sparkN := s.cfg.SparklinePoints
+	n := len(inWindow)
+	startIdx := 0
+	offset := 0
+	if n > sparkN {
+		startIdx = n - sparkN
+	} else {
+		offset = sparkN - n
+	}
+	for i := startIdx; i < n; i++ {
+		if inWindow[i].Online {
+			snap.Sparkline[offset+(i-startIdx)] = inWindow[i].LatencyMs
+		}
 	}
 
 	// Uptime % over the in-window samples.

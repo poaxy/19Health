@@ -90,7 +90,7 @@ func main() {
 	historyStore := history.NewStore(history.Config{
 		Window:          time.Duration(config.CLIConfig.History.WindowHours) * time.Hour,
 		BucketCount:     24,
-		SparklinePoints: 24,
+		SparklinePoints: 60,
 		DegradedLatency: config.CLIConfig.History.DegradedLatencyMs,
 		CheckInterval:   time.Duration(config.CLIConfig.Proxy.CheckInterval) * time.Second,
 	})
