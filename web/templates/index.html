@@ -195,7 +195,8 @@
         background: var(--status-offline);
       }
       .bucket-empty {
-        background: var(--segment-empty);
+        background: var(--status-online);
+        opacity: 0.85;
       }
       .text-accent {
         color: var(--accent);
@@ -474,6 +475,7 @@
       .h-10 { height: 2.5rem; }
       .italic { font-style: italic; }
       .rounded-sm { border-radius: 0.125rem; }
+      .rounded-md { border-radius: 0.375rem; }
       .gap-px { gap: 1px; }
       .gap-1\.5 { gap: 0.375rem; }
       .tracking-wide { letter-spacing: 0.025em; }
@@ -788,7 +790,7 @@
             <div class="flex gap-0.5 mt-2 h-6">
               <template x-for="(bucket, i) in (proxy.history && proxy.history.heartbeats) || []" :key="i">
                 <div
-                  class="flex-1 rounded-sm"
+                  class="flex-1 rounded-md"
                   :class="bucketClass(bucket.state)"
                   :title="bucket.state + (bucket.latencyMs ? ' · ' + bucket.latencyMs + 'ms' : '')"
                 ></div>
@@ -797,7 +799,7 @@
 
             <!-- Sparkline -->
             <svg
-              class="w-full h-10 mt-1.5"
+              class="w-full h-10 mt-1.5 overflow-visible"
               viewBox="0 0 100 32"
               preserveAspectRatio="none"
               x-show="proxy.history && proxy.history.sparkline && proxy.history.sparkline.length"
@@ -805,17 +807,9 @@
             >
               <defs>
                 <linearGradient :id="'spark-fill-' + proxy.stableId" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" style="stop-color: var(--spark-color); stop-opacity: 0.55"/>
-                  <stop offset="0.6" style="stop-color: var(--spark-color); stop-opacity: 0.12"/>
+                  <stop offset="0" style="stop-color: var(--spark-color); stop-opacity: 0.4"/>
                   <stop offset="1" style="stop-color: var(--spark-color); stop-opacity: 0"/>
                 </linearGradient>
-                <filter :id="'spark-glow-' + proxy.stableId" x="-30%" y="-50%" width="160%" height="200%">
-                  <feGaussianBlur stdDeviation="0.7" result="blur"/>
-                  <feMerge>
-                    <feMergeNode in="blur"/>
-                    <feMergeNode in="SourceGraphic"/>
-                  </feMerge>
-                </filter>
               </defs>
               <path
                 :d="sparklineAreaPath(proxy)"
@@ -825,11 +819,11 @@
               <path
                 :d="sparklinePath(proxy)"
                 fill="none"
-                stroke-width="1.6"
+                stroke-width="1.25"
                 stroke-linecap="round"
                 stroke-linejoin="round"
+                vector-effect="non-scaling-stroke"
                 style="stroke: var(--spark-color)"
-                :filter="'url(#spark-glow-' + proxy.stableId + ')'"
               ></path>
             </svg>
 
@@ -1124,18 +1118,33 @@
             return 'latency-bad';
           },
 
-          // Build (x, y) coordinates for non-zero sparkline samples,
-          // normalized to a 100x32 viewBox with 2px padding top/bottom.
+          // Build (x, y) coordinates for the sparkline. Non-zero
+          // samples are spread evenly across the full 0..100 range
+          // (a sparkline is a trend indicator, not a literal time
+          // axis), so two samples render as a full-width segment
+          // rather than a tiny squiggle in the corner. The y axis
+          // is normalized to the visible value range with 2px of
+          // top/bottom padding inside the 32-unit viewBox.
           _sparklineCoords(proxy) {
             const pts = (proxy.history && proxy.history.sparkline) || [];
             if (!pts.length) return [];
-            const max = Math.max(...pts.filter(v => v > 0), 1);
-            const stride = 100 / Math.max(pts.length - 1, 1);
-            const coords = [];
+            const values = [];
             for (let i = 0; i < pts.length; i++) {
-              if (pts[i] > 0) {
-                coords.push([i * stride, 30 - (pts[i] / max) * 28]);
-              }
+              if (pts[i] > 0) values.push(pts[i]);
+            }
+            if (!values.length) return [];
+            let min = values[0], max = values[0];
+            for (const v of values) {
+              if (v < min) min = v;
+              if (v > max) max = v;
+            }
+            // When all values are equal, plot them flat in the middle.
+            const span = max - min || 1;
+            const stride = 100 / Math.max(values.length - 1, 1);
+            const coords = [];
+            for (let i = 0; i < values.length; i++) {
+              const norm = (values[i] - min) / span;
+              coords.push([i * stride, 30 - norm * 26]);
             }
             return coords;
           },
