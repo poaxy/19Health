@@ -185,6 +185,21 @@
       .status-offline {
         background: var(--color-red);
       }
+      .bucket-ok {
+        background: var(--status-online);
+      }
+      .bucket-degraded {
+        background: var(--status-degraded);
+      }
+      .bucket-down {
+        background: var(--status-offline);
+      }
+      .bucket-empty {
+        background: var(--segment-empty);
+      }
+      .text-accent {
+        color: var(--accent);
+      }
       .latency-good {
         color: var(--color-green);
       }
@@ -714,60 +729,101 @@
       >
         <template x-for="(proxy, idx) in filteredProxies" :key="proxy.stableId">
           <div
-            class="proxy-card group card rounded-lg px-3 py-2.5 flex items-center gap-3 transition-all duration-150"
+            class="proxy-card group card rounded-lg p-3 transition-all duration-150"
             :class="initialLoad && 'animate'"
           >
-            <!-- Status dot -->
-            <div class="relative flex-shrink-0">
-              <div
-                class="w-2 h-2 rounded-full"
-                :class="proxy.status ? 'status-online pulse' : 'status-offline'"
-              ></div>
-            </div>
-
-            <!-- Info -->
-            <div class="flex-1 min-w-0">
+            <!-- Top row: dot · name · latency -->
+            <div class="flex items-center gap-2">
+              <div class="relative flex-shrink-0">
+                <div
+                  class="w-2 h-2 rounded-full"
+                  :class="proxy.online ? 'status-online pulse' : 'status-offline'"
+                ></div>
+              </div>
               {{ if .IsPublic }}
               <span
-                class="text-sm text-primary truncate block"
+                class="flex-1 min-w-0 text-sm font-semibold text-primary truncate"
                 x-text="proxy.name"
               ></span>
               {{ else }}
               <a
                 :href="proxy.url"
                 target="_blank"
-                class="text-sm text-primary link-hover truncate block transition-colors"
+                class="flex-1 min-w-0 text-sm font-semibold text-primary link-hover truncate transition-colors"
                 x-text="proxy.name"
               ></a>
-              {{ end }} {{ if .ShowServerDetails }}
-              <span class="text-xs text-muted truncate block"
-                ><span x-text="proxy.serverInfo"></span> · :<span
-                  x-text="proxy.proxyPort"
-                ></span
-              ></span>
               {{ end }}
+              <span
+                class="text-sm font-bold tabular-nums"
+                :class="proxy.online ? 'text-accent' : 'text-offline'"
+                x-text="proxy.online ? proxy.latency : 'offline'"
+              ></span>
             </div>
 
-            <!-- Latency -->
-            <div class="flex flex-col items-center gap-1 flex-shrink-0">
+            <!-- Meta row: uptime % · 24h · incident phrase -->
+            <div class="flex flex-wrap items-center gap-1.5 mt-1.5 text-[10px] text-muted">
               <span
-                class="text-xs tabular-nums"
-                :class="proxy.latencyMs === 0 ? 'text-muted' : proxy.latencyMs < 500 ? 'latency-good' : proxy.latencyMs < 1000 ? 'latency-medium' : 'latency-bad'"
-                x-text="proxy.latency"
+                class="font-semibold"
+                :class="uptimeClass(proxy)"
+                x-text="formatUptime(proxy)"
               ></span>
-              <div class="flex items-center gap-0.5">
-                <template x-for="i in 5" :key="i">
-                  <div
-                    class="latency-segment"
-                    :class="proxy.latencyMs === 0 ? '' :
-                    (proxy.latencyMs < 500 ? (i <= getSegments(proxy.latencyMs) ? 'segment-good' : '') :
-                     proxy.latencyMs < 1000 ? (i <= getSegments(proxy.latencyMs) ? 'segment-medium' : '') :
-                     (i <= getSegments(proxy.latencyMs) ? 'segment-bad' : ''))"
-                  ></div>
-                </template>
+              <span x-text="formatIncident(proxy)"></span>
+            </div>
+
+            <!-- Heartbeat bar -->
+            <div class="flex gap-px mt-2 h-3.5">
+              <template x-for="(bucket, i) in (proxy.history && proxy.history.heartbeats) || []" :key="i">
+                <div
+                  class="flex-1 rounded-[1px]"
+                  :class="bucketClass(bucket.state)"
+                  :title="bucket.state + (bucket.latencyMs ? ' · ' + bucket.latencyMs + 'ms' : '')"
+                ></div>
+              </template>
+            </div>
+
+            <!-- Sparkline -->
+            <svg
+              class="w-full h-8 mt-1.5"
+              viewBox="0 0 100 32"
+              preserveAspectRatio="none"
+              x-show="proxy.history && proxy.history.sparkline && proxy.history.sparkline.length"
+            >
+              <defs>
+                <linearGradient :id="'spark-' + proxy.stableId" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" style="stop-color: var(--accent); stop-opacity: 0.35"/>
+                  <stop offset="1" style="stop-color: var(--accent); stop-opacity: 0"/>
+                </linearGradient>
+              </defs>
+              <polygon
+                :fill="'url(#spark-' + proxy.stableId + ')'"
+                :points="sparklineArea(proxy)"
+              ></polygon>
+              <polyline
+                fill="none"
+                stroke-width="1.5"
+                style="stroke: var(--accent)"
+                :points="sparklineLine(proxy)"
+              ></polyline>
+            </svg>
+
+            <!-- Min/avg/max strip -->
+            <div
+              x-show="proxy.history && proxy.history.latencyMin > 0"
+              class="flex justify-between mt-2 pt-2 border-t border-default"
+            >
+              <div class="flex flex-col">
+                <span class="text-[9px] uppercase tracking-wide text-muted">min</span>
+                <span class="text-[11px] font-semibold text-secondary tabular-nums" x-text="proxy.history.latencyMin + 'ms'"></span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-[9px] uppercase tracking-wide text-muted">avg</span>
+                <span class="text-[11px] font-semibold text-secondary tabular-nums" x-text="proxy.history.latencyAvg + 'ms'"></span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-[9px] uppercase tracking-wide text-muted">max</span>
+                <span class="text-[11px] font-semibold text-secondary tabular-nums" x-text="proxy.history.latencyMax + 'ms'"></span>
               </div>
             </div>
-
           </div>
         </template>
       </div>
