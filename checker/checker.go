@@ -143,6 +143,9 @@ func (pc *ProxyChecker) checkProxyInternal(proxy *models.ProxyConfig, expectedGe
 	}
 
 	recordHistory := func(online bool, latency time.Duration) {
+		if !isGenerationValid() {
+			return
+		}
 		if pc.history == nil {
 			return
 		}
