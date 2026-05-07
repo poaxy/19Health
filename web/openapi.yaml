@@ -195,6 +195,47 @@ components:
           type: string
           example: "Proxy not found"
 
+    HistorySnapshot:
+      type: object
+      properties:
+        heartbeats:
+          type: array
+          items:
+            type: object
+            properties:
+              state:
+                type: string
+                enum: [ok, degraded, down, empty]
+              latencyMs:
+                type: integer
+                format: int64
+        sparkline:
+          type: array
+          items:
+            type: integer
+            format: int64
+        uptime24h:
+          type: number
+          format: double
+          description: Uptime percentage over the configured history window (default 24h).
+        lastIncidentAt:
+          type: string
+          format: date-time
+          nullable: true
+        downSince:
+          type: string
+          format: date-time
+          nullable: true
+        latencyMin:
+          type: integer
+          format: int64
+        latencyAvg:
+          type: integer
+          format: int64
+        latencyMax:
+          type: integer
+          format: int64
+
     PublicProxyInfo:
       type: object
       description: Public proxy info without sensitive data (server IPs, ports)
@@ -212,6 +253,8 @@ components:
           type: integer
           format: int64
           example: 150
+        history:
+          $ref: '#/components/schemas/HistorySnapshot'
 
     ProxyInfo:
       type: object
@@ -249,6 +292,8 @@ components:
           type: integer
           format: int64
           example: 150
+        history:
+          $ref: '#/components/schemas/HistorySnapshot'
 
     StatusResponse:
       type: object
