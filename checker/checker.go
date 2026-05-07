@@ -12,6 +12,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"19health/history"
 	"19health/logger"
 	"19health/metrics"
 	"19health/models"
@@ -34,9 +35,21 @@ type ProxyChecker struct {
 	checkMethod     string
 	mu              sync.RWMutex
 	generation      uint64
+	history         *history.Store
 }
 
-func NewProxyChecker(proxies []*models.ProxyConfig, startPort int, ipCheckURL string, ipCheckTimeout int, genMethodURL string, downloadURL string, downloadTimeout int, downloadMinSize int64, checkMethod string) *ProxyChecker {
+func NewProxyChecker(
+	proxies []*models.ProxyConfig,
+	startPort int,
+	ipCheckURL string,
+	ipCheckTimeout int,
+	genMethodURL string,
+	downloadURL string,
+	downloadTimeout int,
+	downloadMinSize int64,
+	checkMethod string,
+	historyStore *history.Store,
+) *ProxyChecker {
 	return &ProxyChecker{
 		proxies:   proxies,
 		startPort: startPort,
@@ -50,6 +63,7 @@ func NewProxyChecker(proxies []*models.ProxyConfig, startPort int, ipCheckURL st
 		downloadTimeout: downloadTimeout,
 		downloadMinSize: downloadMinSize,
 		checkMethod:     checkMethod,
+		history:         historyStore,
 	}
 }
 
@@ -128,13 +142,24 @@ func (pc *ProxyChecker) checkProxyInternal(proxy *models.ProxyConfig, expectedGe
 		pc.latencyMetrics.Store(metricKey, time.Duration(0))
 	}
 
+	recordHistory := func(online bool, latency time.Duration) {
+		if pc.history == nil {
+			return
+		}
+		pc.history.Append(proxy.StableID, history.Sample{
+			Timestamp: time.Now(),
+			Online:    online,
+			LatencyMs: latency.Milliseconds(),
+		})
+	}
+
 	proxyURL := fmt.Sprintf("socks5://127.0.0.1:%d", pc.startPort+proxy.Index)
 	proxyURLParsed, err := url.Parse(proxyURL)
 	if err != nil {
 		logger.Error("Error parsing proxy URL %s: %v", proxyURL, err)
 		setFailedStatus()
 		setFailedLatency()
-
+		recordHistory(false, 0)
 		return
 	}
 
@@ -166,7 +191,7 @@ func (pc *ProxyChecker) checkProxyInternal(proxy *models.ProxyConfig, expectedGe
 		logger.Error("%s | %v", proxy.Name, checkErr)
 		setFailedStatus()
 		setFailedLatency()
-
+		recordHistory(false, 0)
 		return
 	}
 
@@ -174,6 +199,7 @@ func (pc *ProxyChecker) checkProxyInternal(proxy *models.ProxyConfig, expectedGe
 		logger.Error("%s | Failed | %s | Latency: %s", proxy.Name, logMessage, latency)
 		setFailedStatus()
 		setFailedLatency()
+		recordHistory(false, 0)
 	} else {
 		logger.Result("%s | Success | %s | Latency: %s", proxy.Name, logMessage, latency)
 		if !isGenerationValid() {
@@ -197,6 +223,7 @@ func (pc *ProxyChecker) checkProxyInternal(proxy *models.ProxyConfig, expectedGe
 
 		pc.latencyMetrics.Store(metricKey, latency)
 		pc.currentMetrics.Store(metricKey, true)
+		recordHistory(true, latency)
 	}
 }
 
@@ -337,10 +364,31 @@ func (pc *ProxyChecker) ClearMetrics() {
 
 func (pc *ProxyChecker) UpdateProxies(newProxies []*models.ProxyConfig) {
 	pc.mu.Lock()
-	defer pc.mu.Unlock()
+
+	oldIDs := make(map[string]struct{}, len(pc.proxies))
+	for _, p := range pc.proxies {
+		if p.StableID != "" {
+			oldIDs[p.StableID] = struct{}{}
+		}
+	}
+	for _, p := range newProxies {
+		if p.StableID == "" {
+			p.StableID = p.GenerateStableID()
+		}
+		delete(oldIDs, p.StableID)
+	}
+
 	atomic.AddUint64(&pc.generation, 1)
 	pc.ClearMetrics()
 	pc.proxies = newProxies
+
+	pc.mu.Unlock()
+
+	if pc.history != nil {
+		for id := range oldIDs {
+			pc.history.Drop(id)
+		}
+	}
 }
 
 func (pc *ProxyChecker) CheckAllProxies() {
