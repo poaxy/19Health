@@ -1062,6 +1062,7 @@
               }
             }
 
+            this.refreshData();
             if (this.autoRefresh) this.startCountdown();
             setTimeout(() => this.initialLoad = false, 500);
           },
@@ -1184,6 +1185,7 @@
                     proxy.online = updated.online;
                     proxy.latencyMs = updated.latencyMs;
                     proxy.latency = updated.latencyMs > 0 ? updated.latencyMs + 'ms' : 'n/a';
+                    proxy.history = updated.history;
                   }
                 });
                 // Update badge proxy if in badge mode
@@ -1193,6 +1195,7 @@
                     this.badgeProxy.online = updated.online;
                     this.badgeProxy.latencyMs = updated.latencyMs;
                     this.badgeProxy.latency = updated.latencyMs > 0 ? updated.latencyMs + 'ms' : 'n/a';
+                    this.badgeProxy.history = updated.history;
                   }
                 }
               }
