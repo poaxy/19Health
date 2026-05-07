@@ -256,7 +256,9 @@ func medianLatency(samples []Sample) int64 {
 	return (values[mid-1] + values[mid]) / 2
 }
 
-// Drop removes a proxy's buffer, e.g. on subscription refresh.
+// Drop removes a proxy's buffer. Safe to call for missing IDs.
 func (s *Store) Drop(stableID string) {
-	// Implemented in a later task.
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.buffers, stableID)
 }

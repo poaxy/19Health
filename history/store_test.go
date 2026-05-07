@@ -162,3 +162,33 @@ func TestSnapshotDownSinceWhenCurrentlyOffline(t *testing.T) {
 		t.Errorf("DownSince = %v, want %v", snap.DownSince, transition)
 	}
 }
+
+func TestDropRemovesBuffer(t *testing.T) {
+	s := NewStore(defaultConfig())
+	now := time.Date(2026, 5, 7, 12, 0, 0, 0, time.UTC)
+
+	s.Append("p1", Sample{Timestamp: now, Online: true, LatencyMs: 50})
+	s.Append("p2", Sample{Timestamp: now, Online: true, LatencyMs: 50})
+
+	s.Drop("p1")
+
+	s.mu.RLock()
+	_, p1Exists := s.buffers["p1"]
+	_, p2Exists := s.buffers["p2"]
+	s.mu.RUnlock()
+
+	if p1Exists {
+		t.Error("expected p1 buffer to be removed")
+	}
+	if !p2Exists {
+		t.Error("expected p2 buffer to still exist")
+	}
+
+	// Snapshot of dropped proxy returns the empty default.
+	snap := s.Snapshot("p1", now)
+	for i, b := range snap.Heartbeats {
+		if b.State != StateEmpty {
+			t.Errorf("after Drop, Heartbeats[%d].State = %q, want %q", i, b.State, StateEmpty)
+		}
+	}
+}
