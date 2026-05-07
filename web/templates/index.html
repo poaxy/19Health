@@ -262,12 +262,6 @@
         border-radius: 3px;
       }
 
-      /* Toast */
-      .toast {
-        background: var(--bg-secondary);
-        border: 1px solid var(--border);
-      }
-
       /* Card animations - only on initial load */
       .proxy-card.animate {
         animation: cardAppear 0.3s ease-out both;
@@ -481,32 +475,6 @@
       </div>
     </template>
 
-    <!-- Toast -->
-    <div x-show="!badgeMode" class="fixed top-4 right-4 z-50">
-      <template x-for="t in toasts" :key="t.id">
-        <div
-          x-show="t.visible"
-          x-transition.opacity
-          class="toast px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 mb-2"
-        >
-          <svg
-            class="w-4 h-4 text-online"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-          <span class="text-sm text-primary" x-text="t.message"></span>
-        </div>
-      </template>
-    </div>
-
     <div x-show="!badgeMode" class="flex-1 w-full max-w-screen-2xl mx-auto px-4 lg:px-6 py-6 flex flex-col">
       <!-- Header -->
       <header
@@ -612,115 +580,12 @@
         </div>
       </header>
 
-      <!-- Stats -->
-      <div x-show="showStats" class="grid grid-cols-4 gap-2 sm:gap-3 mb-6">
-        <div class="card rounded-lg p-2 sm:p-4 text-center">
-          <div
-            class="text-base sm:text-xl font-semibold text-primary"
-            x-text="stats.total"
-          >
-            0
-          </div>
-          <div class="text-xs text-muted mt-0.5">Total</div>
-        </div>
-        <div class="card rounded-lg p-2 sm:p-4 text-center">
-          <div
-            class="text-base sm:text-xl font-semibold text-online"
-            x-text="stats.online"
-          >
-            0
-          </div>
-          <div class="text-xs text-muted mt-0.5">Online</div>
-        </div>
-        <div class="card rounded-lg p-2 sm:p-4 text-center">
-          <div
-            class="text-base sm:text-xl font-semibold text-offline"
-            x-text="stats.offline"
-          >
-            0
-          </div>
-          <div class="text-xs text-muted mt-0.5">Offline</div>
-        </div>
-        <div class="card rounded-lg p-2 sm:p-4 text-center">
-          <div class="text-base sm:text-xl font-semibold text-primary">
-            <span x-text="stats.avgLatency">0</span
-            ><span class="text-xs sm:text-sm text-muted ml-0.5">ms</span>
-          </div>
-          <div class="text-xs text-muted mt-0.5">Avg Latency</div>
-        </div>
-      </div>
-
       <!-- Servers header -->
       <div
         x-show="showServersHeader"
         class="flex flex-wrap items-center justify-between gap-3 mb-4"
       >
         <h2 class="text-base font-semibold text-primary">Servers</h2>
-        {{ if not .IsPublic }}
-        <div class="flex flex-wrap items-center gap-2">
-          <a
-            href="./metrics"
-            target="_blank"
-            class="btn px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5"
-          >
-            <svg
-              class="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              />
-            </svg>
-            Metrics
-          </a>
-          <a
-            href="./health"
-            target="_blank"
-            class="btn px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5"
-          >
-            <svg
-              class="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-            Health
-          </a>
-          <a
-            href="./api/v1/docs"
-            target="_blank"
-            class="btn px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5"
-          >
-            <svg
-              class="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-              />
-            </svg>
-            API
-          </a>
-
-        </div>
-        {{ end }}
       </div>
 
       {{ if .Endpoints }}
@@ -903,28 +768,6 @@
               </div>
             </div>
 
-            {{ if not .IsPublic }}
-            <!-- Copy -->
-            <button
-              @click="copyUrl(proxy)"
-              class="hidden sm:block p-1.5 rounded text-muted btn-icon transition-all"
-              title="Copy URL"
-            >
-              <svg
-                class="w-3.5 h-3.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                />
-              </svg>
-            </button>
-            {{ end }}
           </div>
         </template>
       </div>
@@ -1000,7 +843,6 @@
           searchOpen: false,
           filter: localStorage.getItem('filter') || 'all',
           sort: localStorage.getItem('sort') || 'default',
-          toasts: [],
           initialLoad: true,
 
           // URL-controlled visibility
@@ -1230,18 +1072,6 @@
             this.countdown = {{ .CheckInterval }};
           },
 
-          async copyUrl(proxy) {
-            const url = new URL(proxy.url, location.href).toString();
-            try { await navigator.clipboard.writeText(url); }
-            catch { const t = Object.assign(document.createElement('textarea'), {value: url, style: 'position:fixed;opacity:0'}); document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
-            this.showToast('Copied!');
-          },
-
-          showToast(msg) {
-            const t = { id: Date.now(), message: msg, visible: true };
-            this.toasts.push(t);
-            setTimeout(() => { t.visible = false; setTimeout(() => this.toasts = this.toasts.filter(x => x.id !== t.id), 200); }, 2000);
-          }
         };
       }
     </script>
