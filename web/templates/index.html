@@ -46,48 +46,58 @@
         font-family: "Inter", "Twemoji Country Flags", system-ui, sans-serif;
       }
 
-      /* Dark theme */
+      /* Dark theme — 19Health redesign */
       :root {
-        --bg-primary: #0f1114;
-        --bg-secondary: #1a1d21;
-        --bg-tertiary: #23262b;
-        --border: #2d3138;
-        --border-hover: #3e434b;
-        --text-primary: #cdcdcd;
-        --text-secondary: #9ca3af;
-        --text-muted: #5c6370;
-        --hover-bg: rgba(255, 255, 255, 0.08);
-        --segment-empty: #3e434b;
-        --accent: #294bff;
-        --color-green: #3aff82;
-        --color-red: #ff3232;
-        --color-yellow: #ffae00;
-        --filter-online-bg: rgba(58, 255, 130, 0.15);
-        --filter-offline-bg: rgba(255, 50, 50, 0.15);
-        --btn-active-bg: rgba(58, 255, 130, 0.1);
-        --btn-active-border: rgba(58, 255, 130, 0.3);
+        --bg-primary: #0d1421;
+        --bg-secondary: #161e2e;
+        --bg-tertiary: #11192a;
+        --border: #243049;
+        --border-hover: #2d3a55;
+        --text-primary: #e8eef7;
+        --text-secondary: #b8c2d4;
+        --text-muted: #6b7790;
+        --hover-bg: rgba(240, 180, 41, 0.06);
+        --segment-empty: #243049;
+        --accent: #f0b429;
+        --accent-hover: #d49317;
+        --color-green: #22c55e;
+        --color-red: #ef4444;
+        --color-yellow: #f0b429;
+        --filter-online-bg: rgba(34, 197, 94, 0.15);
+        --filter-offline-bg: rgba(239, 68, 68, 0.15);
+        --btn-active-bg: rgba(240, 180, 41, 0.1);
+        --btn-active-border: rgba(240, 180, 41, 0.4);
+        --status-online: #22c55e;
+        --status-offline: #ef4444;
+        --status-degraded: #f0b429;
+        --link: #4a8cd6;
       }
 
-      /* Light theme */
+      /* Light theme — 19Health redesign */
       .light {
-        --bg-primary: #f5f8fa;
+        --bg-primary: #f7f9fc;
         --bg-secondary: #ffffff;
-        --bg-tertiary: #edf1f7;
-        --border: #d0d9e8;
-        --border-hover: #b8c4d6;
-        --text-primary: #0a0a0a;
-        --text-secondary: #4b5563;
-        --text-muted: #8c95a4;
-        --hover-bg: rgba(0, 0, 0, 0.05);
-        --segment-empty: #c4cdd9;
-        --accent: #294bff;
-        --color-green: #00a63d;
-        --color-red: #ff0000;
-        --color-yellow: #ea8900;
-        --filter-online-bg: rgba(0, 166, 61, 0.15);
-        --filter-offline-bg: rgba(255, 0, 0, 0.15);
-        --btn-active-bg: rgba(0, 166, 61, 0.1);
-        --btn-active-border: rgba(0, 166, 61, 0.3);
+        --bg-tertiary: #f1f4f9;
+        --border: #d8def0;
+        --border-hover: #b9c4dc;
+        --text-primary: #1a1f2e;
+        --text-secondary: #3a4459;
+        --text-muted: #6b7790;
+        --hover-bg: rgba(201, 136, 26, 0.08);
+        --segment-empty: #e2e7f1;
+        --accent: #c9881a;
+        --accent-hover: #a87213;
+        --color-green: #16a34a;
+        --color-red: #dc2626;
+        --color-yellow: #c9881a;
+        --filter-online-bg: rgba(22, 163, 74, 0.15);
+        --filter-offline-bg: rgba(220, 38, 38, 0.15);
+        --btn-active-bg: rgba(201, 136, 26, 0.1);
+        --btn-active-border: rgba(201, 136, 26, 0.4);
+        --status-online: #16a34a;
+        --status-offline: #dc2626;
+        --status-degraded: #c9881a;
+        --link: #1f5fb0;
       }
 
       body {
@@ -175,6 +185,22 @@
       .status-offline {
         background: var(--color-red);
       }
+      .bucket-ok {
+        background: var(--status-online);
+      }
+      .bucket-degraded {
+        background: var(--status-degraded);
+      }
+      .bucket-down {
+        background: var(--status-offline);
+      }
+      .bucket-empty {
+        background: var(--status-online);
+        opacity: 0.85;
+      }
+      .text-accent {
+        color: var(--accent);
+      }
       .latency-good {
         color: var(--color-green);
       }
@@ -250,12 +276,6 @@
       ::-webkit-scrollbar-thumb {
         background: var(--border);
         border-radius: 3px;
-      }
-
-      /* Toast */
-      .toast {
-        background: var(--bg-secondary);
-        border: 1px solid var(--border);
       }
 
       /* Card animations - only on initial load */
@@ -441,11 +461,36 @@
       .badge-transparent {
         background: transparent;
       }
+
+      /* Redesign utilities not present in the precompiled tailwind.css */
+      .mt-auto { margin-top: auto; }
+      .mt-1\.5 { margin-top: 0.375rem; }
+      .mt-2 { margin-top: 0.5rem; }
+      .pt-1\.5 { padding-top: 0.375rem; }
+      .pt-2 { padding-top: 0.5rem; }
+      .p-3 { padding: 0.75rem; }
+      .h-3\.5 { height: 0.875rem; }
+      .h-5 { height: 1.25rem; }
+      .h-6 { height: 1.5rem; }
+      .h-8 { height: 2rem; }
+      .h-10 { height: 2.5rem; }
+      .italic { font-style: italic; }
+      .rounded-sm { border-radius: 0.125rem; }
+      .rounded-md { border-radius: 0.375rem; }
+      .gap-px { gap: 1px; }
+      .gap-1\.5 { gap: 0.375rem; }
+      .tracking-wide { letter-spacing: 0.025em; }
+      .uppercase { text-transform: uppercase; }
+      .font-bold { font-weight: 700; }
+      .rounded-\[1px\] { border-radius: 1px; }
+      .text-\[9px\] { font-size: 9px; line-height: 1; }
+      .text-\[10px\] { font-size: 10px; line-height: 1; }
+      .text-\[11px\] { font-size: 11px; line-height: 1; }
     </style>
   </head>
 
   <body
-    class="min-h-screen antialiased"
+    class="min-h-screen flex flex-col antialiased"
     :class="[badgeMode && 'badge-body', hideBackground && 'no-bg']"
   >
     <!-- Badge Mode -->
@@ -454,7 +499,7 @@
         <div class="badge-card" :class="badgeClasses" :style="badgeStyle">
           <div
             class="badge-status"
-            :class="badgeProxy.status ? 'status-online pulse' : 'status-offline'"
+            :class="badgeProxy.online ? 'status-online pulse' : 'status-offline'"
           ></div>
           <span
             x-show="badgeShowName"
@@ -471,53 +516,25 @@
       </div>
     </template>
 
-    <!-- Toast -->
-    <div x-show="!badgeMode" class="fixed top-4 right-4 z-50">
-      <template x-for="t in toasts" :key="t.id">
-        <div
-          x-show="t.visible"
-          x-transition.opacity
-          class="toast px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 mb-2"
-        >
-          <svg
-            class="w-4 h-4 text-online"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-          <span class="text-sm text-primary" x-text="t.message"></span>
-        </div>
-      </template>
-    </div>
-
-    <div x-show="!badgeMode" class="max-w-screen-2xl mx-auto px-4 lg:px-6 py-6">
+    <div x-show="!badgeMode" class="flex-1 w-full max-w-screen-2xl mx-auto px-4 lg:px-6 py-6 flex flex-col">
       <!-- Header -->
       <header
         x-show="showHeader"
         class="flex items-center justify-between mb-6"
       >
         <div class="flex items-center gap-3">
-          <div
-            class="w-9 h-9 rounded-lg card-flat flex items-center justify-center overflow-hidden"
-          >
+          <div class="w-9 h-9 rounded-lg overflow-hidden flex-shrink-0">
             <img
               x-show="darkMode"
               src="./static/logo-dark.svg"
               alt="Logo"
-              class="w-7 h-7"
+              class="w-9 h-9 block"
             />
             <img
               x-show="!darkMode"
               src="./static/logo-light.svg"
               alt="Logo"
-              class="w-7 h-7"
+              class="w-9 h-9 block"
             />
           </div>
           <div>
@@ -534,7 +551,7 @@
         </div>
 
         <div class="flex items-center gap-2">
-          {{ if not .IsPublic }}
+          {{ if and (not .IsPublic) .Version }}
           <span
             class="h-9 px-3 text-xs rounded-lg card-flat text-muted flex items-center"
             >{{.Version}}</span
@@ -543,11 +560,12 @@
 
           <button
             @click="toggleAutoRefresh()"
-            class="btn h-9 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5"
+            class="btn h-9 w-9 rounded-lg flex items-center justify-center"
             :class="autoRefresh && 'btn-active'"
+            :title="autoRefresh ? 'Auto-refresh on' : 'Auto-refresh off'"
           >
             <svg
-              class="w-3.5 h-3.5"
+              class="w-4 h-4"
               :class="autoRefresh && 'animate-spin'"
               fill="none"
               stroke="currentColor"
@@ -560,10 +578,6 @@
                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
               />
             </svg>
-            <span
-              class="inline-block min-w-[2.5rem] text-right tabular-nums"
-              x-text="autoRefresh ? countdown + 's' : 'Auto'"
-            ></span>
           </button>
 
           <button
@@ -602,115 +616,12 @@
         </div>
       </header>
 
-      <!-- Stats -->
-      <div x-show="showStats" class="grid grid-cols-4 gap-2 sm:gap-3 mb-6">
-        <div class="card rounded-lg p-2 sm:p-4 text-center">
-          <div
-            class="text-base sm:text-xl font-semibold text-primary"
-            x-text="stats.total"
-          >
-            0
-          </div>
-          <div class="text-xs text-muted mt-0.5">Total</div>
-        </div>
-        <div class="card rounded-lg p-2 sm:p-4 text-center">
-          <div
-            class="text-base sm:text-xl font-semibold text-online"
-            x-text="stats.online"
-          >
-            0
-          </div>
-          <div class="text-xs text-muted mt-0.5">Online</div>
-        </div>
-        <div class="card rounded-lg p-2 sm:p-4 text-center">
-          <div
-            class="text-base sm:text-xl font-semibold text-offline"
-            x-text="stats.offline"
-          >
-            0
-          </div>
-          <div class="text-xs text-muted mt-0.5">Offline</div>
-        </div>
-        <div class="card rounded-lg p-2 sm:p-4 text-center">
-          <div class="text-base sm:text-xl font-semibold text-primary">
-            <span x-text="stats.avgLatency">0</span
-            ><span class="text-xs sm:text-sm text-muted ml-0.5">ms</span>
-          </div>
-          <div class="text-xs text-muted mt-0.5">Avg Latency</div>
-        </div>
-      </div>
-
       <!-- Servers header -->
       <div
         x-show="showServersHeader"
         class="flex flex-wrap items-center justify-between gap-3 mb-4"
       >
         <h2 class="text-base font-semibold text-primary">Servers</h2>
-        {{ if not .IsPublic }}
-        <div class="flex flex-wrap items-center gap-2">
-          <a
-            href="./metrics"
-            target="_blank"
-            class="btn px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5"
-          >
-            <svg
-              class="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              />
-            </svg>
-            Metrics
-          </a>
-          <a
-            href="./health"
-            target="_blank"
-            class="btn px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5"
-          >
-            <svg
-              class="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-            Health
-          </a>
-          <a
-            href="./api/v1/docs"
-            target="_blank"
-            class="btn px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5"
-          >
-            <svg
-              class="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-              />
-            </svg>
-            API
-          </a>
-
-        </div>
-        {{ end }}
       </div>
 
       {{ if .Endpoints }}
@@ -839,82 +750,98 @@
       >
         <template x-for="(proxy, idx) in filteredProxies" :key="proxy.stableId">
           <div
-            class="proxy-card group card rounded-lg px-3 py-2.5 flex items-center gap-3 transition-all duration-150"
+            class="proxy-card group card rounded-lg p-3 transition-all duration-150"
             :class="initialLoad && 'animate'"
           >
-            <!-- Status dot -->
-            <div class="relative flex-shrink-0">
-              <div
-                class="w-2 h-2 rounded-full"
-                :class="proxy.status ? 'status-online pulse' : 'status-offline'"
-              ></div>
-            </div>
-
-            <!-- Info -->
-            <div class="flex-1 min-w-0">
-              {{ if .IsPublic }}
+            <!-- Top row: dot · name · latency -->
+            <div class="flex items-center gap-2">
+              <div class="relative flex-shrink-0">
+                <div
+                  class="w-2 h-2 rounded-full"
+                  :class="proxy.online ? 'status-online pulse' : 'status-offline'"
+                ></div>
+              </div>
               <span
-                class="text-sm text-primary truncate block"
+                class="flex-1 min-w-0 text-sm font-semibold text-primary truncate"
                 x-text="proxy.name"
               ></span>
-              {{ else }}
-              <a
-                :href="proxy.url"
-                target="_blank"
-                class="text-sm text-primary link-hover truncate block transition-colors"
-                x-text="proxy.name"
-              ></a>
-              {{ end }} {{ if .ShowServerDetails }}
-              <span class="text-xs text-muted truncate block"
-                ><span x-text="proxy.serverInfo"></span> · :<span
-                  x-text="proxy.proxyPort"
-                ></span
+              <span
+                class="text-sm font-bold tabular-nums"
+                :class="latencyClass(proxy)"
+                x-text="proxy.online ? proxy.latency : 'offline'"
               ></span>
-              {{ end }}
             </div>
 
-            <!-- Latency -->
-            <div class="flex flex-col items-center gap-1 flex-shrink-0">
+            <!-- Meta row: uptime % · 24h · incident phrase -->
+            <div class="flex flex-wrap items-center gap-1.5 mt-1.5 text-[10px] text-muted">
               <span
-                class="text-xs tabular-nums"
-                :class="proxy.latencyMs === 0 ? 'text-muted' : proxy.latencyMs < 500 ? 'latency-good' : proxy.latencyMs < 1000 ? 'latency-medium' : 'latency-bad'"
-                x-text="proxy.latency"
+                class="font-semibold"
+                :class="uptimeClass(proxy)"
+                x-text="formatUptime(proxy)"
               ></span>
-              <div class="flex items-center gap-0.5">
-                <template x-for="i in 5" :key="i">
-                  <div
-                    class="latency-segment"
-                    :class="proxy.latencyMs === 0 ? '' :
-                    (proxy.latencyMs < 500 ? (i <= getSegments(proxy.latencyMs) ? 'segment-good' : '') :
-                     proxy.latencyMs < 1000 ? (i <= getSegments(proxy.latencyMs) ? 'segment-medium' : '') :
-                     (i <= getSegments(proxy.latencyMs) ? 'segment-bad' : ''))"
-                  ></div>
-                </template>
+              <span x-text="formatIncident(proxy)"></span>
+            </div>
+
+            <!-- Heartbeat bar -->
+            <div class="flex gap-0.5 mt-2 h-5">
+              <template x-for="(bucket, i) in (proxy.history && proxy.history.heartbeats) || []" :key="i">
+                <div
+                  class="flex-1 rounded-md"
+                  :class="bucketClass(bucket.state)"
+                  :title="bucket.state + (bucket.latencyMs ? ' · ' + bucket.latencyMs + 'ms' : '')"
+                ></div>
+              </template>
+            </div>
+
+            <!-- Sparkline -->
+            <svg
+              class="w-full h-10 mt-1.5 overflow-visible"
+              viewBox="0 0 100 32"
+              preserveAspectRatio="none"
+              x-show="proxy.history && proxy.history.sparkline && proxy.history.sparkline.length"
+              :style="'--spark-color: ' + sparklineColor(proxy)"
+            >
+              <defs>
+                <linearGradient :id="'spark-stroke-' + proxy.stableId" x1="0" y1="0" x2="1" y2="0" x-html="sparklineStopsHTML(proxy)"></linearGradient>
+                <linearGradient :id="'spark-fill-' + proxy.stableId" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" style="stop-color: var(--spark-color); stop-opacity: 0.4"/>
+                  <stop offset="1" style="stop-color: var(--spark-color); stop-opacity: 0"/>
+                </linearGradient>
+              </defs>
+              <path
+                :d="sparklineAreaPath(proxy)"
+                :fill="'url(#spark-fill-' + proxy.stableId + ')'"
+                stroke="none"
+              ></path>
+              <path
+                :d="sparklinePath(proxy)"
+                fill="none"
+                stroke-width="1.25"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                vector-effect="non-scaling-stroke"
+                :stroke="'url(#spark-stroke-' + proxy.stableId + ')'"
+              ></path>
+            </svg>
+
+            <!-- Min/avg/max strip -->
+            <div
+              x-show="proxy.history && proxy.history.latencyMin > 0"
+              class="flex justify-between mt-2 pt-2 border-t border-default"
+            >
+              <div class="flex flex-col">
+                <span class="text-[9px] uppercase tracking-wide text-muted">min</span>
+                <span class="text-[11px] font-semibold text-secondary tabular-nums" x-text="proxy.history.latencyMin + 'ms'"></span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-[9px] uppercase tracking-wide text-muted">avg</span>
+                <span class="text-[11px] font-semibold text-secondary tabular-nums" x-text="proxy.history.latencyAvg + 'ms'"></span>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-[9px] uppercase tracking-wide text-muted">max</span>
+                <span class="text-[11px] font-semibold text-secondary tabular-nums" x-text="proxy.history.latencyMax + 'ms'"></span>
               </div>
             </div>
-
-            {{ if not .IsPublic }}
-            <!-- Copy -->
-            <button
-              @click="copyUrl(proxy)"
-              class="hidden sm:block p-1.5 rounded text-muted btn-icon transition-all"
-              title="Copy URL"
-            >
-              <svg
-                class="w-3.5 h-3.5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                />
-              </svg>
-            </button>
-            {{ end }}
           </div>
         </template>
       </div>
@@ -926,49 +853,13 @@
         No proxies match your criteria
       </div>
 
-      {{ if not .IsPublic }}
-      <div
-        x-show="showStatusInfo"
-        class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 text-xs text-muted pt-3 border-t border-default"
-      >
-        <span
-          ><span x-text="filteredProxies.length"></span> of
-          <span x-text="proxies.length"></span> proxies · Config URLs return
-          200/503 for monitoring</span
-        >
-        <span class="truncate max-w-full"
-          >Check: {{.CheckMethod}} · Interval: {{.CheckInterval}}s · Timeout:
-          {{.Timeout}}s · {{ if eq .CheckMethod "ip" }}{{.IPCheckUrl}}{{ else if
-          eq .CheckMethod "status" }}{{.StatusCheckUrl}}{{ else if eq
-          .CheckMethod "download" }}{{.DownloadUrl}}{{ end }}</span
-        >
-      </div>
-      {{ end }} {{ end }}
+      {{ end }}
 
       <footer
         x-show="showFooter"
-        class="mt-8 pt-4 border-t border-default text-center text-xs text-muted"
+        class="mt-auto pt-4 border-t border-default text-center text-xs text-muted italic"
       >
-        {{ if .IsPublic }}
-        <div>
-          Powered by
-          <a
-            href="https://github.com/poaxy/19Health"
-            target="_blank"
-            class="hover:text-secondary"
-            >19Health</a
-          >
-        </div>
-        {{ else }}
-        <div>
-          <a
-            href="https://github.com/poaxy/19Health"
-            target="_blank"
-            class="hover:text-secondary"
-            >GitHub</a
-          >
-        </div>
-        {{ end }}
+        for those who have nothing to hide, but everything to protect
       </footer>
     </div>
 
@@ -990,16 +881,13 @@
           searchOpen: false,
           filter: localStorage.getItem('filter') || 'all',
           sort: localStorage.getItem('sort') || 'default',
-          toasts: [],
           initialLoad: true,
 
           // URL-controlled visibility
           showHeader: !getUrlParam('hideHeader'),
-          showStats: !getUrlParam('hideStats'),
           showServersHeader: !getUrlParam('hideServersHeader'),
           showControls: !getUrlParam('hideControls'),
           showProxies: !getUrlParam('hideProxies'),
-          showStatusInfo: !getUrlParam('hideStatusInfo'),
           showFooter: !getUrlParam('hideFooter'),
           hideBackground: getUrlParam('hideBackground'),
 
@@ -1032,7 +920,7 @@
 
           proxies: [
             {{ range $.Endpoints }}
-            { name: "{{.Name}}", stableId: "{{.StableID}}", {{ if $.ShowServerDetails }}serverInfo: "{{.ServerInfo}}", proxyPort: {{.ProxyPort}}, {{ end }}{{ if not $.IsPublic }}url: "{{.URL}}", {{ end }}index: {{.Index}}, status: {{.Status}}, latency: "{{ formatLatency .Latency }}", latencyMs: {{ .Latency.Milliseconds }} },
+            { name: "{{.Name}}", stableId: "{{.StableID}}", {{ if $.ShowServerDetails }}serverInfo: "{{.ServerInfo}}", proxyPort: {{.ProxyPort}}, {{ end }}{{ if not $.IsPublic }}url: "{{.URL}}", {{ end }}index: {{.Index}}, online: {{.Status}}, latency: "{{ formatLatency .Latency }}", latencyMs: {{ .Latency.Milliseconds }} },
             {{ end }}
           ],
 
@@ -1042,8 +930,8 @@
               const q = this.search.toLowerCase();
               r = r.filter(p => p.name.toLowerCase().includes(q) || (p.serverInfo && p.serverInfo.toLowerCase().includes(q)));
             }
-            if (this.filter === 'online') r = r.filter(p => p.status);
-            else if (this.filter === 'offline') r = r.filter(p => !p.status);
+            if (this.filter === 'online') r = r.filter(p => p.online);
+            else if (this.filter === 'offline') r = r.filter(p => !p.online);
 
             return [...r].sort((a, b) => {
               if (this.sort === 'latency-asc') {
@@ -1058,7 +946,7 @@
                 if (b.latencyMs === 0) return -1;
                 return b.latencyMs - a.latencyMs;
               }
-              if (this.sort === 'status') return b.status - a.status;
+              if (this.sort === 'status') return b.online - a.online;
               if (this.sort === 'name') return this.stripLeadingEmoji(a.name).localeCompare(this.stripLeadingEmoji(b.name));
               return a.index - b.index;
             });
@@ -1136,6 +1024,7 @@
               }
             }
 
+            this.refreshData();
             if (this.autoRefresh) this.startCountdown();
             setTimeout(() => this.initialLoad = false, 500);
           },
@@ -1163,6 +1052,187 @@
             return 1;
           },
 
+          // Heartbeat cells are binary on the dashboard: green for any
+          // online bucket (including degraded high-latency ones — the
+          // sparkline is where latency variation is shown) and red for
+          // offline. Empty (no-data) buckets default to green.
+          bucketClass(state) {
+            return state === 'down' ? 'bucket-down' : 'bucket-ok';
+          },
+
+          formatUptime(proxy) {
+            const h = proxy.history;
+            if (!h || !h.heartbeats || h.heartbeats.every(b => b.state === 'empty')) {
+              return '— ';
+            }
+            return h.uptime24h.toFixed(1) + '%';
+          },
+
+          uptimeClass(proxy) {
+            const h = proxy.history;
+            if (!h || h.heartbeats.every(b => b.state === 'empty')) return 'text-muted';
+            if (h.uptime24h >= 99.5) return 'text-online';
+            if (h.uptime24h >= 95)   return 'text-accent';
+            return 'text-offline';
+          },
+
+          formatIncident(proxy) {
+            const h = proxy.history;
+            if (!h) return '· gathering data';
+            if (h.heartbeats.every(b => b.state === 'empty')) return '· gathering data';
+            if (h.downSince) {
+              return '· down for ' + this._humanDuration(Date.now() - new Date(h.downSince).getTime());
+            }
+            if (h.lastIncidentAt) {
+              return '· 24h · last incident ' + this._humanDuration(Date.now() - new Date(h.lastIncidentAt).getTime()) + ' ago';
+            }
+            return '· 24h · no incidents';
+          },
+
+          _humanDuration(ms) {
+            const min = Math.floor(ms / 60000);
+            if (min < 1)   return 'just now';
+            if (min < 60)  return min + 'm';
+            const hours = Math.floor(min / 60);
+            const remM  = min % 60;
+            if (hours < 24) return hours + 'h ' + (remM ? remM + 'm' : '');
+            const days = Math.floor(hours / 24);
+            return days + 'd';
+          },
+
+          sparklineColor(proxy) {
+            if (!proxy.online || proxy.latencyMs === 0) return 'var(--color-red)';
+            if (proxy.latencyMs < 500) return 'var(--color-green)';
+            if (proxy.latencyMs < 1000) return 'var(--color-yellow)';
+            return 'var(--color-red)';
+          },
+
+          // Map a single latency value to its threshold color.
+          _latencyHue(ms) {
+            if (ms < 500)  return 'var(--color-green)';
+            if (ms < 1000) return 'var(--color-yellow)';
+            return 'var(--color-red)';
+          },
+
+          // Build the inner <stop> elements of the sparkline stroke
+          // gradient as an SVG-namespaced HTML string. Each non-zero
+          // sparkline sample contributes one stop colored by its
+          // latency threshold; the gradient interpolates smoothly
+          // between them so the line transitions through green/yellow/
+          // red as latency varies over time.
+          sparklineStopsHTML(proxy) {
+            const pts = (proxy.history && proxy.history.sparkline) || [];
+            if (!pts.length) return '';
+            const values = [];
+            for (let i = 0; i < pts.length; i++) {
+              if (pts[i] > 0) values.push(pts[i]);
+            }
+            if (!values.length) return '';
+            if (values.length === 1) {
+              const c = this._latencyHue(values[0]);
+              return '<stop offset="0%" stop-color="' + c + '"/>' +
+                     '<stop offset="100%" stop-color="' + c + '"/>';
+            }
+            let html = '';
+            for (let i = 0; i < values.length; i++) {
+              const offset = (i / (values.length - 1)) * 100;
+              html += '<stop offset="' + offset.toFixed(2) + '%" stop-color="' + this._latencyHue(values[i]) + '"/>';
+            }
+            return html;
+          },
+
+          latencyClass(proxy) {
+            if (!proxy.online || proxy.latencyMs === 0) return 'latency-bad';
+            if (proxy.latencyMs < 500) return 'latency-good';
+            if (proxy.latencyMs < 1000) return 'latency-medium';
+            return 'latency-bad';
+          },
+
+          // Build (x, y) coordinates for the sparkline. Non-zero
+          // samples are spread evenly across the full 0..100 range
+          // (a sparkline is a trend indicator, not a literal time
+          // axis), so two samples render as a full-width segment
+          // rather than a tiny squiggle in the corner.
+          //
+          // The y axis uses *robust* normalization: with >=4 samples
+          // we drop the top 10% of values (cold-start/jitter spikes)
+          // when computing the range, and clamp anything above to the
+          // top of the chart. This keeps a single outlier from
+          // squashing the rest of the curve into a flat line at the
+          // bottom while still showing that the spike happened.
+          _sparklineCoords(proxy) {
+            const pts = (proxy.history && proxy.history.sparkline) || [];
+            if (!pts.length) return [];
+            const values = [];
+            for (let i = 0; i < pts.length; i++) {
+              if (pts[i] > 0) values.push(pts[i]);
+            }
+            if (!values.length) return [];
+
+            const sorted = values.slice().sort((a, b) => a - b);
+            let lo = sorted[0];
+            let hi = sorted[sorted.length - 1];
+            if (sorted.length >= 4) {
+              const trim = Math.max(1, Math.ceil(sorted.length * 0.1));
+              const trimmedHi = sorted[sorted.length - 1 - trim];
+              if (trimmedHi !== undefined && trimmedHi > lo) {
+                hi = trimmedHi;
+              }
+            }
+            const span = hi - lo || 1;
+            const stride = 100 / Math.max(values.length - 1, 1);
+            const coords = [];
+            for (let i = 0; i < values.length; i++) {
+              const norm = Math.max(0, Math.min(1, (values[i] - lo) / span));
+              coords.push([i * stride, 30 - norm * 26]);
+            }
+            return coords;
+          },
+
+          // Smooth path through the sparkline points using a
+          // Catmull-Rom spline converted to cubic Béziers. With a
+          // single data point, draws a flat full-width line so the
+          // sparkline is visible from the very first sample.
+          sparklinePath(proxy) {
+            const c = this._sparklineCoords(proxy);
+            if (c.length === 0) return '';
+            if (c.length === 1) {
+              const y = c[0][1].toFixed(2);
+              return 'M 0,' + y + ' L 100,' + y;
+            }
+            let d = 'M ' + c[0][0].toFixed(2) + ',' + c[0][1].toFixed(2);
+            const t = 6;
+            for (let i = 0; i < c.length - 1; i++) {
+              const p0 = c[i - 1] || c[i];
+              const p1 = c[i];
+              const p2 = c[i + 1];
+              const p3 = c[i + 2] || p2;
+              const c1x = p1[0] + (p2[0] - p0[0]) / t;
+              const c1y = p1[1] + (p2[1] - p0[1]) / t;
+              const c2x = p2[0] - (p3[0] - p1[0]) / t;
+              const c2y = p2[1] - (p3[1] - p1[1]) / t;
+              d += ' C ' + c1x.toFixed(2) + ',' + c1y.toFixed(2) +
+                   ' ' + c2x.toFixed(2) + ',' + c2y.toFixed(2) +
+                   ' ' + p2[0].toFixed(2) + ',' + p2[1].toFixed(2);
+            }
+            return d;
+          },
+
+          // Same path closed down to the baseline so it can be filled
+          // with a vertical gradient. Single-point case fills a full-width
+          // rectangle from the data point's y down to the baseline.
+          sparklineAreaPath(proxy) {
+            const c = this._sparklineCoords(proxy);
+            if (c.length === 0) return '';
+            if (c.length === 1) {
+              const y = c[0][1].toFixed(2);
+              return 'M 0,' + y + ' L 100,' + y + ' L 100,32 L 0,32 Z';
+            }
+            return this.sparklinePath(proxy) +
+                   ' L ' + c[c.length - 1][0].toFixed(2) + ',32' +
+                   ' L ' + c[0][0].toFixed(2) + ',32 Z';
+          },
+
           stripLeadingEmoji(str) {
             return str.replace(/^[\p{Emoji}\p{Emoji_Modifier}\p{Emoji_Component}\p{Emoji_Modifier_Base}\p{Emoji_Presentation}\u200d\ufe0f\s]+/u, '').trim() || str;
           },
@@ -1188,18 +1258,20 @@
                 json.data.forEach(updated => {
                   const proxy = this.proxies.find(p => p.name === updated.name);
                   if (proxy) {
-                    proxy.status = updated.online;
+                    proxy.online = updated.online;
                     proxy.latencyMs = updated.latencyMs;
                     proxy.latency = updated.latencyMs > 0 ? updated.latencyMs + 'ms' : 'n/a';
+                    proxy.history = updated.history;
                   }
                 });
                 // Update badge proxy if in badge mode
                 if (this.badgeMode && this.badgeProxy) {
                   const updated = json.data.find(p => p.stableId === this.badgeProxy.stableId);
                   if (updated) {
-                    this.badgeProxy.status = updated.online;
+                    this.badgeProxy.online = updated.online;
                     this.badgeProxy.latencyMs = updated.latencyMs;
                     this.badgeProxy.latency = updated.latencyMs > 0 ? updated.latencyMs + 'ms' : 'n/a';
+                    this.badgeProxy.history = updated.history;
                   }
                 }
               }
@@ -1209,18 +1281,6 @@
             this.countdown = {{ .CheckInterval }};
           },
 
-          async copyUrl(proxy) {
-            const url = new URL(proxy.url, location.href).toString();
-            try { await navigator.clipboard.writeText(url); }
-            catch { const t = Object.assign(document.createElement('textarea'), {value: url, style: 'position:fixed;opacity:0'}); document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
-            this.showToast('Copied!');
-          },
-
-          showToast(msg) {
-            const t = { id: Date.now(), message: msg, visible: true };
-            this.toasts.push(t);
-            setTimeout(() => { t.visible = false; setTimeout(() => this.toasts = this.toasts.filter(x => x.id !== t.id), 200); }, 2000);
-          }
         };
       }
     </script>

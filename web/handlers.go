@@ -87,6 +87,7 @@ func IndexHandler(version string, proxyChecker *checker.ProxyChecker) http.Handl
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Header().Set("X-Robots-Tag", "noindex, nofollow")
+		w.Header().Set("Cache-Control", "no-store")
 		if err := RenderIndex(w, data); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

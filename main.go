@@ -6,6 +6,7 @@ import (
 	"time"
 	"19health/checker"
 	"19health/config"
+	"19health/history"
 	"19health/logger"
 	"19health/metrics"
 	"19health/models"
@@ -86,6 +87,14 @@ func main() {
 	registry.MustRegister(metrics.GetProxyStatusMetric())
 	registry.MustRegister(metrics.GetProxyLatencyMetric())
 
+	historyStore := history.NewStore(history.Config{
+		Window:          time.Duration(config.CLIConfig.History.WindowHours) * time.Hour,
+		BucketCount:     24,
+		SparklinePoints: 60,
+		DegradedLatency: config.CLIConfig.History.DegradedLatencyMs,
+		CheckInterval:   time.Duration(config.CLIConfig.Proxy.CheckInterval) * time.Second,
+	})
+
 	proxyChecker := checker.NewProxyChecker(
 		*proxyConfigs,
 		config.CLIConfig.Xray.StartPort,
@@ -96,6 +105,7 @@ func main() {
 		config.CLIConfig.Proxy.DownloadTimeout,
 		config.CLIConfig.Proxy.DownloadMinSize,
 		config.CLIConfig.Proxy.CheckMethod,
+		historyStore,
 	)
 
 	runCheckIteration := func() {
