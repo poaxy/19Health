@@ -45,3 +45,41 @@ func TestNewStoreDefaults(t *testing.T) {
 		t.Fatalf("DownSince = %v, want nil", snap.DownSince)
 	}
 }
+
+func TestAppendStoresSamples(t *testing.T) {
+	s := NewStore(defaultConfig())
+	now := time.Date(2026, 5, 7, 12, 0, 0, 0, time.UTC)
+
+	s.Append("p1", Sample{Timestamp: now.Add(-1 * time.Hour), Online: true, LatencyMs: 50})
+	s.Append("p1", Sample{Timestamp: now, Online: true, LatencyMs: 60})
+
+	snap := s.Snapshot("p1", now)
+
+	// At least one bucket should now be StateOK (the most recent one).
+	foundOK := false
+	for _, b := range snap.Heartbeats {
+		if b.State == StateOK {
+			foundOK = true
+			break
+		}
+	}
+	if !foundOK {
+		t.Fatal("expected at least one StateOK bucket after appending online samples")
+	}
+}
+
+func TestAppendDropsSamplesOlderThanWindow(t *testing.T) {
+	s := NewStore(defaultConfig())
+	now := time.Date(2026, 5, 7, 12, 0, 0, 0, time.UTC)
+
+	// Two old samples, one in-window.
+	s.Append("p1", Sample{Timestamp: now.Add(-25 * time.Hour), Online: true, LatencyMs: 50})
+	s.Append("p1", Sample{Timestamp: now.Add(-25 * time.Hour).Add(time.Minute), Online: true, LatencyMs: 50})
+	s.Append("p1", Sample{Timestamp: now, Online: true, LatencyMs: 60})
+
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	if got := len(s.buffers["p1"].samples); got != 1 {
+		t.Fatalf("after window trim, samples = %d, want 1", got)
+	}
+}
