@@ -469,9 +469,11 @@
       .pt-2 { padding-top: 0.5rem; }
       .p-3 { padding: 0.75rem; }
       .h-3\.5 { height: 0.875rem; }
+      .h-6 { height: 1.5rem; }
       .h-8 { height: 2rem; }
       .h-10 { height: 2.5rem; }
       .italic { font-style: italic; }
+      .rounded-sm { border-radius: 0.125rem; }
       .gap-px { gap: 1px; }
       .gap-1\.5 { gap: 0.375rem; }
       .tracking-wide { letter-spacing: 0.025em; }
@@ -783,10 +785,10 @@
             </div>
 
             <!-- Heartbeat bar -->
-            <div class="flex gap-px mt-2 h-3.5">
+            <div class="flex gap-0.5 mt-2 h-6">
               <template x-for="(bucket, i) in (proxy.history && proxy.history.heartbeats) || []" :key="i">
                 <div
-                  class="flex-1 rounded-[1px]"
+                  class="flex-1 rounded-sm"
                   :class="bucketClass(bucket.state)"
                   :title="bucket.state + (bucket.latencyMs ? ' · ' + bucket.latencyMs + 'ms' : '')"
                 ></div>
@@ -1132,11 +1134,16 @@
           },
 
           // Smooth path through the sparkline points using a
-          // Catmull-Rom spline converted to cubic Béziers.
+          // Catmull-Rom spline converted to cubic Béziers. With a
+          // single data point, draws a flat full-width line so the
+          // sparkline is visible from the very first sample.
           sparklinePath(proxy) {
             const c = this._sparklineCoords(proxy);
             if (c.length === 0) return '';
-            if (c.length === 1) return 'M ' + c[0][0].toFixed(2) + ',' + c[0][1].toFixed(2);
+            if (c.length === 1) {
+              const y = c[0][1].toFixed(2);
+              return 'M 0,' + y + ' L 100,' + y;
+            }
             let d = 'M ' + c[0][0].toFixed(2) + ',' + c[0][1].toFixed(2);
             const t = 6;
             for (let i = 0; i < c.length - 1; i++) {
@@ -1156,10 +1163,15 @@
           },
 
           // Same path closed down to the baseline so it can be filled
-          // with a vertical gradient.
+          // with a vertical gradient. Single-point case fills a full-width
+          // rectangle from the data point's y down to the baseline.
           sparklineAreaPath(proxy) {
             const c = this._sparklineCoords(proxy);
-            if (c.length < 2) return '';
+            if (c.length === 0) return '';
+            if (c.length === 1) {
+              const y = c[0][1].toFixed(2);
+              return 'M 0,' + y + ' L 100,' + y + ' L 100,32 L 0,32 Z';
+            }
             return this.sparklinePath(proxy) +
                    ' L ' + c[c.length - 1][0].toFixed(2) + ',32' +
                    ' L ' + c[0][0].toFixed(2) + ',32 Z';
