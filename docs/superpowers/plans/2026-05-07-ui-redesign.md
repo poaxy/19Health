@@ -447,8 +447,11 @@ func TestSnapshotDerivedStats(t *testing.T) {
 	if snap.LastIncidentAt == nil || !snap.LastIncidentAt.Equal(incident) {
 		t.Errorf("LastIncidentAt = %v, want %v", snap.LastIncidentAt, incident)
 	}
-	if snap.DownSince != nil {
-		t.Errorf("DownSince = %v, want nil (last sample is the offline one but no transition needed since no later online sample)", snap.DownSince)
+	// Last sample is offline so the proxy is "currently offline"; DownSince
+	// points to the oldest contiguous offline sample, which here is the
+	// only offline sample (the incident itself).
+	if snap.DownSince == nil || !snap.DownSince.Equal(incident) {
+		t.Errorf("DownSince = %v, want %v", snap.DownSince, incident)
 	}
 	if snap.LatencyMin != 40 {
 		t.Errorf("LatencyMin = %d, want 40", snap.LatencyMin)
