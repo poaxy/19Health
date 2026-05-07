@@ -63,6 +63,11 @@ type CLI struct {
 		CustomAssetsPath  string `name:"web-custom-assets-path" help:"Path to custom assets directory (logo.svg, favicon.ico, custom.css, index.html)" default:"" env:"WEB_CUSTOM_ASSETS_PATH"`
 	} `embed:"" prefix:""`
 
+	History struct {
+		WindowHours       int   `name:"history-window-hours" help:"Hours of per-proxy history to retain in memory" default:"24" env:"HISTORY_WINDOW_HOURS"`
+		DegradedLatencyMs int64 `name:"degraded-latency-ms" help:"Latency above which a healthy bucket is marked degraded (ms)" default:"500" env:"DEGRADED_LATENCY_MS"`
+	} `embed:"" prefix:""`
+
 	Version  VersionFlag `name:"version" help:"Print version information and quit"`
 	RunOnce  bool        `name:"run-once" help:"Run one check cycle and exit" default:"false" env:"RUN_ONCE"`
 	LogLevel string      `name:"log-level" help:"Log level (debug|info|warn|error|none)" default:"info" env:"LOG_LEVEL"`
