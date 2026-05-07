@@ -115,23 +115,103 @@ func (s *Store) Snapshot(stableID string, now time.Time) Snapshot {
 
 	windowStart := now.Add(-s.cfg.Window)
 	bucketDur := s.cfg.Window / time.Duration(s.cfg.BucketCount)
+	sparkDur := s.cfg.Window / time.Duration(s.cfg.SparklinePoints)
 
-	// Group samples by heartbeat bucket.
+	// Filter and group samples for both heartbeat and sparkline buckets.
 	hbGroups := make([][]Sample, s.cfg.BucketCount)
+	sparkGroups := make([][]Sample, s.cfg.SparklinePoints)
+
+	var inWindow []Sample
 	for _, sm := range samples {
 		if sm.Timestamp.Before(windowStart) || !sm.Timestamp.Before(now) {
 			continue
 		}
-		idx := int(sm.Timestamp.Sub(windowStart) / bucketDur)
-		if idx < 0 || idx >= s.cfg.BucketCount {
-			continue
+		inWindow = append(inWindow, sm)
+
+		hbIdx := int(sm.Timestamp.Sub(windowStart) / bucketDur)
+		if hbIdx >= 0 && hbIdx < s.cfg.BucketCount {
+			hbGroups[hbIdx] = append(hbGroups[hbIdx], sm)
 		}
-		hbGroups[idx] = append(hbGroups[idx], sm)
+		spIdx := int(sm.Timestamp.Sub(windowStart) / sparkDur)
+		if spIdx >= 0 && spIdx < s.cfg.SparklinePoints {
+			sparkGroups[spIdx] = append(sparkGroups[spIdx], sm)
+		}
 	}
 
 	for i, group := range hbGroups {
 		snap.Heartbeats[i] = reduceBucket(group, s.cfg.DegradedLatency)
 	}
+	for i, group := range sparkGroups {
+		// Sparkline records median latency of online samples; 0 if no online samples.
+		var online []Sample
+		for _, sm := range group {
+			if sm.Online && sm.LatencyMs > 0 {
+				online = append(online, sm)
+			}
+		}
+		if len(online) > 0 {
+			snap.Sparkline[i] = medianLatency(online)
+		}
+	}
+
+	if len(inWindow) == 0 {
+		return snap
+	}
+
+	// Uptime % over the in-window samples.
+	var onlineCount int
+	for _, sm := range inWindow {
+		if sm.Online {
+			onlineCount++
+		}
+	}
+	snap.Uptime24h = float64(onlineCount) / float64(len(inWindow)) * 100
+
+	// Latency min/avg/max over in-window online samples.
+	var latencies []int64
+	for _, sm := range inWindow {
+		if sm.Online && sm.LatencyMs > 0 {
+			latencies = append(latencies, sm.LatencyMs)
+		}
+	}
+	if len(latencies) > 0 {
+		snap.LatencyMin = latencies[0]
+		snap.LatencyMax = latencies[0]
+		var sum int64
+		for _, v := range latencies {
+			if v < snap.LatencyMin {
+				snap.LatencyMin = v
+			}
+			if v > snap.LatencyMax {
+				snap.LatencyMax = v
+			}
+			sum += v
+		}
+		snap.LatencyAvg = sum / int64(len(latencies))
+	}
+
+	// LastIncidentAt = most recent offline sample.
+	for i := len(inWindow) - 1; i >= 0; i-- {
+		if !inWindow[i].Online {
+			t := inWindow[i].Timestamp
+			snap.LastIncidentAt = &t
+			break
+		}
+	}
+
+	// DownSince = if currently offline, walk back to the transition.
+	last := inWindow[len(inWindow)-1]
+	if !last.Online {
+		transition := last.Timestamp
+		for i := len(inWindow) - 2; i >= 0; i-- {
+			if inWindow[i].Online {
+				break
+			}
+			transition = inWindow[i].Timestamp
+		}
+		snap.DownSince = &transition
+	}
+
 	return snap
 }
 
