@@ -46,48 +46,58 @@
         font-family: "Inter", "Twemoji Country Flags", system-ui, sans-serif;
       }
 
-      /* Dark theme */
+      /* Dark theme — 19Health redesign */
       :root {
-        --bg-primary: #0f1114;
-        --bg-secondary: #1a1d21;
-        --bg-tertiary: #23262b;
-        --border: #2d3138;
-        --border-hover: #3e434b;
-        --text-primary: #cdcdcd;
-        --text-secondary: #9ca3af;
-        --text-muted: #5c6370;
-        --hover-bg: rgba(255, 255, 255, 0.08);
-        --segment-empty: #3e434b;
-        --accent: #294bff;
-        --color-green: #3aff82;
-        --color-red: #ff3232;
-        --color-yellow: #ffae00;
-        --filter-online-bg: rgba(58, 255, 130, 0.15);
-        --filter-offline-bg: rgba(255, 50, 50, 0.15);
-        --btn-active-bg: rgba(58, 255, 130, 0.1);
-        --btn-active-border: rgba(58, 255, 130, 0.3);
+        --bg-primary: #0d1421;
+        --bg-secondary: #161e2e;
+        --bg-tertiary: #11192a;
+        --border: #243049;
+        --border-hover: #2d3a55;
+        --text-primary: #e8eef7;
+        --text-secondary: #b8c2d4;
+        --text-muted: #6b7790;
+        --hover-bg: rgba(240, 180, 41, 0.06);
+        --segment-empty: #243049;
+        --accent: #f0b429;
+        --accent-hover: #d49317;
+        --color-green: #22c55e;
+        --color-red: #ef4444;
+        --color-yellow: #f0b429;
+        --filter-online-bg: rgba(34, 197, 94, 0.15);
+        --filter-offline-bg: rgba(239, 68, 68, 0.15);
+        --btn-active-bg: rgba(240, 180, 41, 0.1);
+        --btn-active-border: rgba(240, 180, 41, 0.4);
+        --status-online: #22c55e;
+        --status-offline: #ef4444;
+        --status-degraded: #f0b429;
+        --link: #4a8cd6;
       }
 
-      /* Light theme */
+      /* Light theme — 19Health redesign */
       .light {
-        --bg-primary: #f5f8fa;
+        --bg-primary: #f7f9fc;
         --bg-secondary: #ffffff;
-        --bg-tertiary: #edf1f7;
-        --border: #d0d9e8;
-        --border-hover: #b8c4d6;
-        --text-primary: #0a0a0a;
-        --text-secondary: #4b5563;
-        --text-muted: #8c95a4;
-        --hover-bg: rgba(0, 0, 0, 0.05);
-        --segment-empty: #c4cdd9;
-        --accent: #294bff;
-        --color-green: #00a63d;
-        --color-red: #ff0000;
-        --color-yellow: #ea8900;
-        --filter-online-bg: rgba(0, 166, 61, 0.15);
-        --filter-offline-bg: rgba(255, 0, 0, 0.15);
-        --btn-active-bg: rgba(0, 166, 61, 0.1);
-        --btn-active-border: rgba(0, 166, 61, 0.3);
+        --bg-tertiary: #f1f4f9;
+        --border: #d8def0;
+        --border-hover: #b9c4dc;
+        --text-primary: #1a1f2e;
+        --text-secondary: #3a4459;
+        --text-muted: #6b7790;
+        --hover-bg: rgba(201, 136, 26, 0.08);
+        --segment-empty: #e2e7f1;
+        --accent: #c9881a;
+        --accent-hover: #a87213;
+        --color-green: #16a34a;
+        --color-red: #dc2626;
+        --color-yellow: #c9881a;
+        --filter-online-bg: rgba(22, 163, 74, 0.15);
+        --filter-offline-bg: rgba(220, 38, 38, 0.15);
+        --btn-active-bg: rgba(201, 136, 26, 0.1);
+        --btn-active-border: rgba(201, 136, 26, 0.4);
+        --status-online: #16a34a;
+        --status-offline: #dc2626;
+        --status-degraded: #c9881a;
+        --link: #1f5fb0;
       }
 
       body {
@@ -445,7 +455,7 @@
   </head>
 
   <body
-    class="min-h-screen antialiased"
+    class="min-h-screen flex flex-col antialiased"
     :class="[badgeMode && 'badge-body', hideBackground && 'no-bg']"
   >
     <!-- Badge Mode -->
@@ -497,7 +507,7 @@
       </template>
     </div>
 
-    <div x-show="!badgeMode" class="max-w-screen-2xl mx-auto px-4 lg:px-6 py-6">
+    <div x-show="!badgeMode" class="flex-1 w-full max-w-screen-2xl mx-auto px-4 lg:px-6 py-6 flex flex-col">
       <!-- Header -->
       <header
         x-show="showHeader"
@@ -947,7 +957,7 @@
 
       <footer
         x-show="showFooter"
-        class="mt-8 pt-4 border-t border-default text-center text-xs text-muted"
+        class="mt-auto pt-4 border-t border-default text-center text-xs text-muted"
       >
         {{ if .IsPublic }}
         <div>
