@@ -7,32 +7,47 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
 	"19health/checker"
 	"19health/config"
+	"19health/history"
 	"19health/models"
 )
 
 //go:embed openapi.yaml
 var openAPISpec []byte
 
+type HistorySnapshot struct {
+	Heartbeats     []history.Bucket `json:"heartbeats"`
+	Sparkline      []int64          `json:"sparkline"`
+	Uptime24h      float64          `json:"uptime24h"`
+	LastIncidentAt *time.Time       `json:"lastIncidentAt,omitempty"`
+	DownSince      *time.Time       `json:"downSince,omitempty"`
+	LatencyMin     int64            `json:"latencyMin"`
+	LatencyAvg     int64            `json:"latencyAvg"`
+	LatencyMax     int64            `json:"latencyMax"`
+}
+
 type ProxyInfo struct {
-	Index     int    `json:"index"`
-	StableID  string `json:"stableId"`
-	Name      string `json:"name"`
-	SubName   string `json:"subName"`
-	Server    string `json:"server"`
-	Port      int    `json:"port"`
-	Protocol  string `json:"protocol"`
-	ProxyPort int    `json:"proxyPort"`
-	Online    bool   `json:"online"`
-	LatencyMs int64  `json:"latencyMs"`
+	Index     int              `json:"index"`
+	StableID  string           `json:"stableId"`
+	Name      string           `json:"name"`
+	SubName   string           `json:"subName"`
+	Server    string           `json:"server"`
+	Port      int              `json:"port"`
+	Protocol  string           `json:"protocol"`
+	ProxyPort int              `json:"proxyPort"`
+	Online    bool             `json:"online"`
+	LatencyMs int64            `json:"latencyMs"`
+	History   *HistorySnapshot `json:"history,omitempty"`
 }
 
 type PublicProxyInfo struct {
-	StableID  string `json:"stableId"`
-	Name      string `json:"name"`
-	Online    bool   `json:"online"`
-	LatencyMs int64  `json:"latencyMs"`
+	StableID  string           `json:"stableId"`
+	Name      string           `json:"name"`
+	Online    bool             `json:"online"`
+	LatencyMs int64            `json:"latencyMs"`
+	History   *HistorySnapshot `json:"history,omitempty"`
 }
 
 type StatusResponse struct {
@@ -87,7 +102,7 @@ func writeError(w http.ResponseWriter, message string, code int) {
 	})
 }
 
-func toProxyInfo(proxy *models.ProxyConfig, online bool, latency time.Duration, startPort int) ProxyInfo {
+func toProxyInfo(proxy *models.ProxyConfig, online bool, latency time.Duration, startPort int, snap *HistorySnapshot) ProxyInfo {
 	return ProxyInfo{
 		Index:     proxy.Index,
 		StableID:  proxy.StableID,
@@ -99,6 +114,25 @@ func toProxyInfo(proxy *models.ProxyConfig, online bool, latency time.Duration, 
 		ProxyPort: startPort + proxy.Index,
 		Online:    online,
 		LatencyMs: latency.Milliseconds(),
+		History:   snap,
+	}
+}
+
+func snapshotFromChecker(pc *checker.ProxyChecker, stableID string) *HistorySnapshot {
+	store := pc.History()
+	if store == nil {
+		return nil
+	}
+	snap := store.Snapshot(stableID, time.Now())
+	return &HistorySnapshot{
+		Heartbeats:     snap.Heartbeats,
+		Sparkline:      snap.Sparkline,
+		Uptime24h:      snap.Uptime24h,
+		LastIncidentAt: snap.LastIncidentAt,
+		DownSince:      snap.DownSince,
+		LatencyMin:     snap.LatencyMin,
+		LatencyAvg:     snap.LatencyAvg,
+		LatencyMax:     snap.LatencyMax,
 	}
 }
 
@@ -121,6 +155,7 @@ func APIPublicProxiesHandler(proxyChecker *checker.ProxyChecker) http.HandlerFun
 				Name:      proxy.Name,
 				Online:    status,
 				LatencyMs: latency.Milliseconds(),
+				History:   snapshotFromChecker(proxyChecker, proxy.StableID),
 			})
 		}
 
@@ -142,7 +177,7 @@ func APIProxiesHandler(proxyChecker *checker.ProxyChecker, startPort int) http.H
 
 		for _, proxy := range proxies {
 			status, latency, _ := proxyChecker.GetProxyStatus(proxy.Name)
-			result = append(result, toProxyInfo(proxy, status, latency, startPort))
+			result = append(result, toProxyInfo(proxy, status, latency, startPort, snapshotFromChecker(proxyChecker, proxy.StableID)))
 		}
 
 		writeJSON(w, result)
@@ -180,7 +215,7 @@ func APIProxyHandler(proxyChecker *checker.ProxyChecker, startPort int) http.Han
 		}
 
 		status, latency, _ := proxyChecker.GetProxyStatus(proxy.Name)
-		writeJSON(w, toProxyInfo(proxy, status, latency, startPort))
+		writeJSON(w, toProxyInfo(proxy, status, latency, startPort, snapshotFromChecker(proxyChecker, proxy.StableID)))
 	}
 }
 

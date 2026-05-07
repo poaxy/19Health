@@ -67,6 +67,12 @@ func NewProxyChecker(
 	}
 }
 
+// History returns the underlying history.Store. May be nil if the checker
+// was constructed without one.
+func (pc *ProxyChecker) History() *history.Store {
+	return pc.history
+}
+
 func (pc *ProxyChecker) GetCurrentIP() (string, error) {
 	if pc.ipInitialized && pc.currentIP != "" {
 		return pc.currentIP, nil
