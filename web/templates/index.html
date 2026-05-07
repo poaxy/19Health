@@ -473,7 +473,7 @@
         <div class="badge-card" :class="badgeClasses" :style="badgeStyle">
           <div
             class="badge-status"
-            :class="badgeProxy.status ? 'status-online pulse' : 'status-offline'"
+            :class="badgeProxy.online ? 'status-online pulse' : 'status-offline'"
           ></div>
           <span
             x-show="badgeShowName"
@@ -939,20 +939,9 @@
 
           proxies: [
             {{ range $.Endpoints }}
-            { name: "{{.Name}}", stableId: "{{.StableID}}", {{ if $.ShowServerDetails }}serverInfo: "{{.ServerInfo}}", proxyPort: {{.ProxyPort}}, {{ end }}{{ if not $.IsPublic }}url: "{{.URL}}", {{ end }}index: {{.Index}}, status: {{.Status}}, latency: "{{ formatLatency .Latency }}", latencyMs: {{ .Latency.Milliseconds }} },
+            { name: "{{.Name}}", stableId: "{{.StableID}}", {{ if $.ShowServerDetails }}serverInfo: "{{.ServerInfo}}", proxyPort: {{.ProxyPort}}, {{ end }}{{ if not $.IsPublic }}url: "{{.URL}}", {{ end }}index: {{.Index}}, online: {{.Status}}, latency: "{{ formatLatency .Latency }}", latencyMs: {{ .Latency.Milliseconds }} },
             {{ end }}
           ],
-
-          get stats() {
-            const online = this.proxies.filter(p => p.status).length;
-            const withLatency = this.proxies.filter(p => p.status && p.latencyMs > 0);
-            return {
-              total: this.proxies.length,
-              online,
-              offline: this.proxies.length - online,
-              avgLatency: withLatency.length ? Math.round(withLatency.reduce((s, p) => s + p.latencyMs, 0) / withLatency.length) : 0
-            };
-          },
 
           get filteredProxies() {
             let r = this.proxies;
@@ -960,8 +949,8 @@
               const q = this.search.toLowerCase();
               r = r.filter(p => p.name.toLowerCase().includes(q) || (p.serverInfo && p.serverInfo.toLowerCase().includes(q)));
             }
-            if (this.filter === 'online') r = r.filter(p => p.status);
-            else if (this.filter === 'offline') r = r.filter(p => !p.status);
+            if (this.filter === 'online') r = r.filter(p => p.online);
+            else if (this.filter === 'offline') r = r.filter(p => !p.online);
 
             return [...r].sort((a, b) => {
               if (this.sort === 'latency-asc') {
@@ -976,7 +965,7 @@
                 if (b.latencyMs === 0) return -1;
                 return b.latencyMs - a.latencyMs;
               }
-              if (this.sort === 'status') return b.status - a.status;
+              if (this.sort === 'status') return b.online - a.online;
               if (this.sort === 'name') return this.stripLeadingEmoji(a.name).localeCompare(this.stripLeadingEmoji(b.name));
               return a.index - b.index;
             });
@@ -1081,6 +1070,73 @@
             return 1;
           },
 
+          bucketClass(state) {
+            switch (state) {
+              case 'ok':       return 'bucket-ok';
+              case 'degraded': return 'bucket-degraded';
+              case 'down':     return 'bucket-down';
+              default:         return 'bucket-empty';
+            }
+          },
+
+          formatUptime(proxy) {
+            const h = proxy.history;
+            if (!h || !h.heartbeats || h.heartbeats.every(b => b.state === 'empty')) {
+              return '— ';
+            }
+            return h.uptime24h.toFixed(1) + '%';
+          },
+
+          uptimeClass(proxy) {
+            const h = proxy.history;
+            if (!h || h.heartbeats.every(b => b.state === 'empty')) return 'text-muted';
+            if (h.uptime24h >= 99.5) return 'text-online';
+            if (h.uptime24h >= 95)   return 'text-accent';
+            return 'text-offline';
+          },
+
+          formatIncident(proxy) {
+            const h = proxy.history;
+            if (!h) return '· gathering data';
+            if (h.heartbeats.every(b => b.state === 'empty')) return '· gathering data';
+            if (h.downSince) {
+              return '· down for ' + this._humanDuration(Date.now() - new Date(h.downSince).getTime());
+            }
+            if (h.lastIncidentAt) {
+              return '· 24h · last incident ' + this._humanDuration(Date.now() - new Date(h.lastIncidentAt).getTime()) + ' ago';
+            }
+            return '· 24h · no incidents';
+          },
+
+          _humanDuration(ms) {
+            const min = Math.floor(ms / 60000);
+            if (min < 1)   return 'just now';
+            if (min < 60)  return min + 'm';
+            const hours = Math.floor(min / 60);
+            const remM  = min % 60;
+            if (hours < 24) return hours + 'h ' + (remM ? remM + 'm' : '');
+            const days = Math.floor(hours / 24);
+            return days + 'd';
+          },
+
+          sparklineLine(proxy) {
+            const pts = (proxy.history && proxy.history.sparkline) || [];
+            if (!pts.length) return '';
+            const max = Math.max(...pts.filter(v => v > 0), 1);
+            const stride = 100 / Math.max(pts.length - 1, 1);
+            return pts.map((v, i) => {
+              const x = (i * stride).toFixed(2);
+              const y = v > 0 ? (32 - (v / max) * 28).toFixed(2) : 32;
+              return x + ',' + y;
+            }).join(' ');
+          },
+
+          sparklineArea(proxy) {
+            const line = this.sparklineLine(proxy);
+            if (!line) return '';
+            return '0,32 ' + line + ' 100,32';
+          },
+
           stripLeadingEmoji(str) {
             return str.replace(/^[\p{Emoji}\p{Emoji_Modifier}\p{Emoji_Component}\p{Emoji_Modifier_Base}\p{Emoji_Presentation}\u200d\ufe0f\s]+/u, '').trim() || str;
           },
@@ -1106,7 +1162,7 @@
                 json.data.forEach(updated => {
                   const proxy = this.proxies.find(p => p.name === updated.name);
                   if (proxy) {
-                    proxy.status = updated.online;
+                    proxy.online = updated.online;
                     proxy.latencyMs = updated.latencyMs;
                     proxy.latency = updated.latencyMs > 0 ? updated.latencyMs + 'ms' : 'n/a';
                   }
@@ -1115,7 +1171,7 @@
                 if (this.badgeMode && this.badgeProxy) {
                   const updated = json.data.find(p => p.stableId === this.badgeProxy.stableId);
                   if (updated) {
-                    this.badgeProxy.status = updated.online;
+                    this.badgeProxy.online = updated.online;
                     this.badgeProxy.latencyMs = updated.latencyMs;
                     this.badgeProxy.latency = updated.latencyMs > 0 ? updated.latencyMs + 'ms' : 'n/a';
                   }
