@@ -470,6 +470,7 @@
       .pt-2 { padding-top: 0.5rem; }
       .p-3 { padding: 0.75rem; }
       .h-3\.5 { height: 0.875rem; }
+      .h-5 { height: 1.25rem; }
       .h-6 { height: 1.5rem; }
       .h-8 { height: 2rem; }
       .h-10 { height: 2.5rem; }
@@ -787,7 +788,7 @@
             </div>
 
             <!-- Heartbeat bar -->
-            <div class="flex gap-0.5 mt-2 h-6">
+            <div class="flex gap-0.5 mt-2 h-5">
               <template x-for="(bucket, i) in (proxy.history && proxy.history.heartbeats) || []" :key="i">
                 <div
                   class="flex-1 rounded-md"
@@ -1122,9 +1123,14 @@
           // samples are spread evenly across the full 0..100 range
           // (a sparkline is a trend indicator, not a literal time
           // axis), so two samples render as a full-width segment
-          // rather than a tiny squiggle in the corner. The y axis
-          // is normalized to the visible value range with 2px of
-          // top/bottom padding inside the 32-unit viewBox.
+          // rather than a tiny squiggle in the corner.
+          //
+          // The y axis uses *robust* normalization: with >=4 samples
+          // we drop the top 10% of values (cold-start/jitter spikes)
+          // when computing the range, and clamp anything above to the
+          // top of the chart. This keeps a single outlier from
+          // squashing the rest of the curve into a flat line at the
+          // bottom while still showing that the spike happened.
           _sparklineCoords(proxy) {
             const pts = (proxy.history && proxy.history.sparkline) || [];
             if (!pts.length) return [];
@@ -1133,17 +1139,22 @@
               if (pts[i] > 0) values.push(pts[i]);
             }
             if (!values.length) return [];
-            let min = values[0], max = values[0];
-            for (const v of values) {
-              if (v < min) min = v;
-              if (v > max) max = v;
+
+            const sorted = values.slice().sort((a, b) => a - b);
+            let lo = sorted[0];
+            let hi = sorted[sorted.length - 1];
+            if (sorted.length >= 4) {
+              const trim = Math.max(1, Math.ceil(sorted.length * 0.1));
+              const trimmedHi = sorted[sorted.length - 1 - trim];
+              if (trimmedHi !== undefined && trimmedHi > lo) {
+                hi = trimmedHi;
+              }
             }
-            // When all values are equal, plot them flat in the middle.
-            const span = max - min || 1;
+            const span = hi - lo || 1;
             const stride = 100 / Math.max(values.length - 1, 1);
             const coords = [];
             for (let i = 0; i < values.length; i++) {
-              const norm = (values[i] - min) / span;
+              const norm = Math.max(0, Math.min(1, (values[i] - lo) / span));
               coords.push([i * stride, 30 - norm * 26]);
             }
             return coords;
